@@ -27,10 +27,10 @@ public class Hashtag {
     @UpdateTimestamp
     private Timestamp lastUsed;
 
-    @ManyToOne
-    @JoinColumn(name = "tweet_id",table = "tweet_hashtags")
-    private Tweet tweet;
-
-    @OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL)
+    @ManyToMany
+    @JoinTable(
+    name = "tweet_hashtags",
+    joinColumns = @JoinColumn(name = "hashtag_id"),
+    inverseJoinColumns = @JoinColumn(name = "tweet_id"))
     private List<Tweet> tweets;
 }

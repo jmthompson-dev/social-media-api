@@ -27,6 +27,9 @@ public class Tweet {
 
     private String content;
 
+    @ManyToMany(mappedBy = "tweets")
+    private List<Hashtag> hashtags;
+
     @ManyToOne(targetEntity = Tweet.class)
     private int inReplyTo;
 
@@ -36,19 +39,16 @@ public class Tweet {
     @ManyToOne(targetEntity = User.class)
     private User user;
 
-    @ManyToOne
-    @JoinColumns({
-    @JoinColumn(name = "user_id", table = "user_likes"),
-    @JoinColumn(name = "user_id", table = "user_mentions"),
-    @JoinColumn(name = "hashtag_id", table = "tweet_hashtags")})
-    private Tweet tweet;
+    @ManyToMany
+    @JoinTable(name = "user_likes",
+    joinColumns = @JoinColumn(name = "tweet_id_id"),
+    inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private List<User> userLikes;
 
-    @OneToMany(mappedBy = "tweet")
-    @JoinColumns({
-            @JoinColumn(name = "user_id", table = "user_likes"),
-            @JoinColumn(name = "user_id", table = "user_mentions")})
-    private List<Tweet> tweets;
-
-    @OneToMany(mappedBy = "tweet")
-    private List<Hashtag> hashtags;
+    @ManyToMany
+    @JoinTable(
+    name = "user_mentions",
+    joinColumns = @JoinColumn(name = "tweet_id_id"),
+    inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private List<User> userMentions;
 }

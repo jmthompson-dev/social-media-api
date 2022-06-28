@@ -32,24 +32,19 @@ public class User {
 
     private String phone;
 
-    @ManyToOne
-    @JoinColumns({
-    @JoinColumn(name = "follower_id", table = "followers_following"),
-    @JoinColumn(name = "following_id", table = "followers_following")})
-    private User user;
+    @ManyToMany(mappedBy = "following")
+    private List<User> followers;
 
-    @OneToMany(targetEntity = User.class)
-    private List<User> follower;
-
-    @OneToMany(targetEntity = User.class)
+    @ManyToMany
+    @JoinTable(
+    name = "follows_following",
+    joinColumns = @JoinColumn(name = "follower_id"),
+    inverseJoinColumns = @JoinColumn(name = "following_id"))
     private List<User> following;
 
-    @OneToMany(mappedBy = "user")
-    private List<Tweet> tweets;
+    @ManyToMany(mappedBy = "userLikes")
+    private List<Tweet> tweetLikes;
 
-    @OneToMany
-    @JoinColumns({
-    @JoinColumn(name = "tweet_id", table = "user_likes"),
-    @JoinColumn(name = "tweet_id", table = "user_mentions")})
-    private List<User> users;
+    @ManyToMany(mappedBy = "userMentions")
+    private List<Tweet> tweetMentions;
 }
