@@ -2,7 +2,6 @@ package com.cooksysteam1.socialmedia.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
