@@ -21,7 +21,7 @@ public class TweetResponseDto {
 	
 	private TweetResponseDto inReplyTo;
 	
-	private TweetRequestDto repostOf; // should this be RequestDto or ResponseDto?
+	private TweetResponseDto repostOf; 
 	
 	
 }

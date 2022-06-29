@@ -1,11 +1,9 @@
 package com.cooksysteam1.socialmedia.entity.model.response;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 
-@NoArgsConstructor
-@Data
+@Getter
 @AllArgsConstructor
 public class ErrorResponseDto {
 	

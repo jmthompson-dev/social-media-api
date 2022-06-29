@@ -2,11 +2,13 @@ package com.cooksysteam1.socialmedia.entity.model.response;
 
 import java.sql.Timestamp;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class HashtagResponseDto {
 	
 	private String label;
