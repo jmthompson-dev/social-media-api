@@ -1,14 +1,17 @@
 package com.cooksysteam1.socialmedia.entity;
 
+import com.cooksysteam1.socialmedia.entity.resource.Credentials;
+import com.cooksysteam1.socialmedia.entity.resource.Profile;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
 
 @Entity
 @Table(name = "user_table")
-@Embeddable
 @Data
 @NoArgsConstructor
 public class User {
@@ -17,20 +20,19 @@ public class User {
     @GeneratedValue
     private Long id;
 
-    @Column(nullable = false)
-    private String username;
-
-    @Column(nullable = false)
-    private String password;
-
-    @Column(nullable = false)
+    @CreationTimestamp
     private Timestamp joined;
 
+    @Embedded
+    private Credentials credentials;
+
+    @Embedded
+    private Profile profile;
+
+    @OneToMany(mappedBy = "author")
+    private List<Tweet> tweets;
+
     private boolean deleted;
-
-    private String email;
-
-    private String phone;
 
     @ManyToMany(mappedBy = "following")
     private List<User> followers;

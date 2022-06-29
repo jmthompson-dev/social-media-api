@@ -9,7 +9,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "tweet")
-@Embeddable
 @Data
 @NoArgsConstructor
 public class Tweet {
@@ -18,7 +17,8 @@ public class Tweet {
     @GeneratedValue
     private Long id;
 
-    private int author;
+    @ManyToOne
+    private User author;
 
     @CreationTimestamp
     private Timestamp posted;
@@ -30,14 +30,14 @@ public class Tweet {
     @ManyToMany(mappedBy = "tweets")
     private List<Hashtag> hashtags;
 
-    @ManyToOne(targetEntity = Tweet.class)
-    private int inReplyTo;
+    @ManyToOne
+    private Tweet inReplyTo;
 
-    @ManyToOne(targetEntity = Tweet.class)
-    private int repostOf;
+    @ManyToOne
+    private Tweet repostOf;
 
-    @ManyToOne(targetEntity = User.class)
-    private User user;
+    @OneToMany(mappedBy = "repostOf")
+    private List<Tweet> reposts;
 
     @ManyToMany
     @JoinTable(name = "user_likes",
