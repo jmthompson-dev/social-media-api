@@ -1,17 +1,12 @@
 package com.cooksysteam1.socialmedia.entity.model.response;
 
-import java.security.Timestamp;
-
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
 @NoArgsConstructor
-@Data
 public class UserResponseDto {
-	
-	private String username;
-	
-	private ProfileResponseDto profile;
-	
-	private Timestamp joined;
+    private String username;
 }
