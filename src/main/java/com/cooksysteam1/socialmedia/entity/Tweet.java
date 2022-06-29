@@ -27,7 +27,11 @@ public class Tweet {
 
     private String content;
 
-    @ManyToMany(mappedBy = "tweets")
+    @ManyToMany
+    @JoinTable(
+    name = "tweet_hashtags",
+    joinColumns = @JoinColumn(name = "tweet_id"),
+    inverseJoinColumns = @JoinColumn(name = "hashtag_id"))
     private List<Hashtag> hashtags;
 
     @ManyToOne
