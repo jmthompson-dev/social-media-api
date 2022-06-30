@@ -7,6 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class NotAuthorizedException extends RuntimeException{
     private final static long serialVersionUID = -9556005374278628L;
-    
+
     private String message;
 }
