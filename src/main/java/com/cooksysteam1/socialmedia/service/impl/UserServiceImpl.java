@@ -109,4 +109,35 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("Invalid credentials. Expected fields not to be null but was false.");
         }
     }
+
+    private void validateOptionalUser(Optional<User> optionalUser) {
+		if (optionalUser.isEmpty()) {
+			throw new NotFoundException("No user found with username: " + optionalUser.get().getCredentials().getUsername());
+		}
+	}
+	
+	private void validateUser (User user) {
+		if (user.isDeleted() || user == null) {
+			throw new NotFoundException("This user cannot be found.");
+		}
+	}
+	
+	private void validateUsername (String username) {
+		if (!userRepository.existsUserByCredentials_Username(username)) {
+			throw new NotFoundException("No user found with username: " + username);
+		}
+	}
+	
+	@Override
+	public UserResponseDto getUserByUsername(String username) {
+		validateUsername(username);
+		
+		Optional<User> optionalUser = userRepository.findUserByCredentials_Username(username);
+		validateOptionalUser(optionalUser);
+
+		User user = optionalUser.get();
+		validateUser(user);
+		
+		return userMapper.entityToResponse(user);
+	}
 }

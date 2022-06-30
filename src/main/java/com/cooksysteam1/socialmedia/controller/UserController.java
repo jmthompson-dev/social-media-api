@@ -41,4 +41,9 @@ public class UserController {
     public UserResponseDto createAUser(@RequestBody UserRequestDto userRequestDto) {
         return userService.createAUser(userRequestDto);
     }
+    
+    @GetMapping("/@{username}")
+	public UserResponseDto getUserByUsername(@PathVariable String username) {
+		return userService.getUserByUsername(username);
+	}
 }
