@@ -12,4 +12,6 @@ public interface UserService {
     UserResponseDto createAUser(UserRequestDto userRequestDto);
 
     UserResponseDto updateAUser(String username, UserRequestDto userRequestDto);
+
+	UserResponseDto getUserByUsername(String username);
 }
