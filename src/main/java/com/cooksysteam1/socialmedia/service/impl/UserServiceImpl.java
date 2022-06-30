@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
     public List<UserResponseDto> getAllUsers() {
          List<User> users = userRepository.findAll();
          if (users.isEmpty()) throw new NotFoundException("Unknown error. Expected to find all users but was false.");
-         return userMapper.entitiesToResponses(users);
+         return userMapper.entitiesToResponses(userRepository.findAllUsersByDeletedFalse());
      }
 
     @Override
