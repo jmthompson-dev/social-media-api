@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
         if (profileDto == null ||
             profileDto.getEmail() == null ||
             profileDto.getEmail().isBlank()) throw new BadRequestException("Invalid profile. Expected email field not to be null but was false.");
-    }
+        }
 
     private void validateUserRequestDtoAndUsername(UserRequestDto userRequestDto, String username) {
         if (username == null || username.isBlank()) throw new NotAuthorizedException("Invalid username. Expected username to not be null or empty but was false.");
