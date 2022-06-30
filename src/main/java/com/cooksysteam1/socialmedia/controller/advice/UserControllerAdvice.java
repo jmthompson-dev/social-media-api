@@ -7,15 +7,12 @@ import com.cooksysteam1.socialmedia.entity.model.response.ErrorDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
-@ResponseBody
-public class TweetControllerAdvice {
-
+public class UserControllerAdvice {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorDto handleNotFoundException(NotFoundException notFoundException, HttpServletRequest httpServletRequest) {
