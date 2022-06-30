@@ -46,21 +46,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.entityToResponse(userRepository.saveAndFlush(user));
     }
 
-    /**
-     * "Deletes" a user with the given username.
-     * If no such user exists or the provided credentials do not match the user,
-     * an error should be sent in lieu of a response.
-     * If a user is successfully "deleted", the response should contain the user data prior to deletion.
-     *
-     * IMPORTANT: This action should not actually drop any records from the database!
-     * Instead, develop a way to keep track of "deleted" users so that if a user is re-activated,
-     * all of their tweets and information are restored.
-     *
-     * Request
-     * 'Credentials'
-     * Response
-     * 'User'
-     */
     @Override
     public UserResponseDto deleteAUserByUsername(String username, CredentialsDto credentialsDto) {
         validateCredentialsRequestDto(credentialsDto);
@@ -68,7 +53,6 @@ public class UserServiceImpl implements UserService {
         Optional<User> userOptional = userRepository.findUserByCredentials_UsernameAndDeletedFalse(username);
         User user = validateOptionalAndReturnsUser(userOptional);
         validateUserCredentialsAgainstCredentialsDto(user.getCredentials(), credentialsDto);
-        if (user.isDeleted()) throw new NotAuthorizedException("Invalid authorization. Expected user to have active account but was false.");
         user.setDeleted(true);
         return userMapper.entityToResponse(userRepository.saveAndFlush(user));
     }
@@ -87,7 +71,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateUserCredentialsAgainstCredentialsDto(Credentials userCredentials, CredentialsDto credentialsDto) {
-        if (userCredentials.equals(credentialsMapper.requestToEntity(credentialsDto))) throw new NotAuthorizedException("Invalid credentials. Expected credentials to patch but was false.");
+        if (!userCredentials.equals(credentialsMapper.requestToEntity(credentialsDto))) throw new NotAuthorizedException("Invalid credentials. Expected credentials to ,atch but was false.");
     }
 
     private User validateOptionalAndReturnsUser(Optional<User> userOptional) {

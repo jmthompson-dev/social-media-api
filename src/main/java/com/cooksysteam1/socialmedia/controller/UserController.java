@@ -32,7 +32,7 @@ public class UserController {
 
     @DeleteMapping("/@{username}")
     @ResponseStatus(HttpStatus.OK)
-    public UserResponseDto deleteAUserByUsername(@RequestBody CredentialsDto credentialsDto, @PathVariable String username) {
+    public UserResponseDto deleteAUserByUsername( @PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
         return userService.deleteAUserByUsername(username, credentialsDto);
     }
 
