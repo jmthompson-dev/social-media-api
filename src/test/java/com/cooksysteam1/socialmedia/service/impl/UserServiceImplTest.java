@@ -9,6 +9,7 @@ import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
 import com.cooksysteam1.socialmedia.entity.resource.Credentials;
 import com.cooksysteam1.socialmedia.entity.resource.Profile;
 import com.cooksysteam1.socialmedia.mapper.CredentialsMapper;
+import com.cooksysteam1.socialmedia.mapper.ProfileMapper;
 import com.cooksysteam1.socialmedia.mapper.UserMapper;
 import com.cooksysteam1.socialmedia.repository.UserRepository;
 import com.cooksysteam1.socialmedia.service.UserService;
@@ -26,6 +27,8 @@ class UserServiceImplTest {
 
     private UserMapper userMapper;
 
+    private ProfileMapper profileMapper;
+
     private CredentialsMapper credentialsMapper;
 
     private UserService userService;
@@ -34,8 +37,9 @@ class UserServiceImplTest {
     void setup() {
         userRepository = mock(UserRepository.class);
         userMapper = mock(UserMapper.class);
+        profileMapper = mock(ProfileMapper.class);
         credentialsMapper = mock(CredentialsMapper.class);
-        userService = new UserServiceImpl(userRepository, userMapper, credentialsMapper);
+        userService = new UserServiceImpl(userRepository, userMapper, profileMapper, credentialsMapper);
     }
 
     @Test

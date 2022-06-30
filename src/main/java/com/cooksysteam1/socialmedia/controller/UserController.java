@@ -22,6 +22,12 @@ public class UserController {
         return userService.getAllUsers();
     }
 
+    @PatchMapping("/@{username}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public UserResponseDto updateAUser(@PathVariable String username, @RequestBody UserRequestDto userRequestDto) {
+        return userService.updateAUser(username, userRequestDto);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponseDto createAUser(@RequestBody UserRequestDto userRequestDto) {
