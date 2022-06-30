@@ -38,10 +38,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto updateAUser(String username, UserRequestDto userRequestDto) {
-        validateUserRequestDtoAndUsername(userRequestDto, username);
+        validateUserRequestDto(userRequestDto);
+        validateUsername(username);
         Optional<User> userOptional = userRepository.findUserByCredentials(credentialsMapper.requestToEntity(userRequestDto.getCredentials()));
-        User user = userOptional.orElseThrow(()-> new NotFoundException("Invalid username. Expected to find a user by username but was false."));
+        User user = validateOptionalAndReturnsUser(userOptional);
         user.getCredentials().setUsername(username);
+        return userMapper.entityToResponse(userRepository.saveAndFlush(user));
+    }
+
+    @Override
+    public UserResponseDto deleteAUserByUsername(String username, CredentialsDto credentialsDto) {
+        validateCredentialsRequestDto(credentialsDto);
+        validateUsername(username);
+        Optional<User> userOptional = userRepository.findUserByCredentials_UsernameAndDeletedFalse(username);
+        User user = validateOptionalAndReturnsUser(userOptional);
+        validateUserCredentialsAgainstCredentialsDto(user.getCredentials(), credentialsDto);
+        user.setDeleted(true);
         return userMapper.entityToResponse(userRepository.saveAndFlush(user));
     }
 
@@ -49,13 +61,21 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto createAUser(UserRequestDto userRequestDto) {
         validateUserRequestDto(userRequestDto);
         Optional<User> userOptional = userRepository.findUserByCredentials(credentialsMapper.requestToEntity(userRequestDto.getCredentials()));
-        User user = userOptional.orElseGet(() -> userMapper.requestToEntity(userRequestDto));
+        User user = validateOptionalAndReturnsUser(userOptional);
         if (user.getId() != null) {
             validateUserAccountReactivation(user.getCredentials());
             user.setDeleted(false);
         }
 
         return userMapper.entityToResponse(userRepository.saveAndFlush(user));
+    }
+
+    private void validateUserCredentialsAgainstCredentialsDto(Credentials userCredentials, CredentialsDto credentialsDto) {
+        if (!userCredentials.equals(credentialsMapper.requestToEntity(credentialsDto))) throw new NotAuthorizedException("Invalid credentials. Expected credentials to ,atch but was false.");
+    }
+
+    private User validateOptionalAndReturnsUser(Optional<User> userOptional) {
+        return userOptional.orElseThrow(()-> new NotFoundException("Invalid username. Expected to find a user by username but was false."));
     }
 
     private void validateUserAccountReactivation(Credentials credentials) {
@@ -75,9 +95,9 @@ public class UserServiceImpl implements UserService {
             profileDto.getEmail().isBlank()) throw new BadRequestException("Invalid profile. Expected email field not to be null but was false.");
         }
 
-    private void validateUserRequestDtoAndUsername(UserRequestDto userRequestDto, String username) {
+
+    private void validateUsername(String username) {
         if (username == null || username.isBlank()) throw new NotAuthorizedException("Invalid username. Expected username to not be null or empty but was false.");
-        validateUserRequestDto(userRequestDto);
     }
 
     private void validateCredentialsRequestDto(CredentialsDto credentialsRequestDto) {
