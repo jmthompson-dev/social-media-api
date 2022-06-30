@@ -14,8 +14,8 @@ import com.cooksysteam1.socialmedia.repository.UserRepository;
 import com.cooksysteam1.socialmedia.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +26,10 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
 
     private final CredentialsMapper credentialsMapper;
+    
+     @Override
+    public List<UserResponseDto> getAllUsers() {
+        return userMapper.entitiesToResponses(userRepository.findAll());
 
     @Override
     public UserResponseDto createAUser(UserRequestDto userRequestDto) {
