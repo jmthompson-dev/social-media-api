@@ -27,15 +27,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
 
-    private final ProfileMapper profileMapper;
-
     private final CredentialsMapper credentialsMapper;
 
      @Override
     public List<UserResponseDto> getAllUsers() {
-         List<User> users = userRepository.findAll();
+         List<User> users = userRepository.findAllUsersByDeletedFalse();
          if (users.isEmpty()) throw new NotFoundException("Unknown error. Expected to find all users but was false.");
-         return userMapper.entitiesToResponses(userRepository.findAllUsersByDeletedFalse());
+         return userMapper.entitiesToResponses(users);
      }
 
     @Override
