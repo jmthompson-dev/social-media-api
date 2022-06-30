@@ -52,7 +52,9 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateProfileRequestDto(ProfileDto profileDto) {
-        if (profileDto == null) throw new BadRequestException("Invalid profile. Expected email field not to be null but was false.");
+        if (profileDto == null ||
+            profileDto.getEmail() == null ||
+            profileDto.getEmail().isBlank()) throw new BadRequestException("Invalid profile. Expected email field not to be null but was false.");
     }
 
     private void validateCredentialsRequestDto(CredentialsDto credentialsRequestDto) {
