@@ -17,4 +17,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findAllUsersByDeletedFalse();
 
+    Optional<User> findUserByCredentials_UsernameAndDeletedFalse(String username);
+
 }
