@@ -9,6 +9,6 @@ public class TweetRequestDto {
 	
 	private String content;
 	
-	private CredentialsRequestDto credentials;
+	private CredentialsDto credentials;
 	
 }

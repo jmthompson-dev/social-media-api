@@ -1,12 +1,12 @@
 package com.cooksysteam1.socialmedia.entity.resource;
 
 import com.cooksysteam1.socialmedia.entity.Tweet;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class Context {
 

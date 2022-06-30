@@ -1,7 +1,6 @@
 package com.cooksysteam1.socialmedia.entity;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
@@ -10,7 +9,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "hashtag")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 public class Hashtag {
 
