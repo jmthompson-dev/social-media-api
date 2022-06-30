@@ -27,8 +27,6 @@ class UserServiceImplTest {
 
     private UserMapper userMapper;
 
-    private ProfileMapper profileMapper;
-
     private CredentialsMapper credentialsMapper;
 
     private UserService userService;
@@ -37,9 +35,8 @@ class UserServiceImplTest {
     void setup() {
         userRepository = mock(UserRepository.class);
         userMapper = mock(UserMapper.class);
-        profileMapper = mock(ProfileMapper.class);
         credentialsMapper = mock(CredentialsMapper.class);
-        userService = new UserServiceImpl(userRepository, userMapper, profileMapper, credentialsMapper);
+        userService = new UserServiceImpl(userRepository, userMapper, credentialsMapper);
     }
 
     @Test
