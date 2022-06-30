@@ -1,5 +1,6 @@
 package com.cooksysteam1.socialmedia.controller.advice;
 
+<<<<<<< HEAD
 import com.cooksysteam1.socialmedia.controller.exception.BadRequestException;
 import com.cooksysteam1.socialmedia.controller.exception.NotAuthorizedException;
 import com.cooksysteam1.socialmedia.controller.exception.NotFoundException;
@@ -30,4 +31,10 @@ public class UserControllerAdvice {
     public ErrorDto handleNotFoundException(NotAuthorizedException notAuthorizedException, HttpServletRequest httpServletRequest) {
         return new ErrorDto(notAuthorizedException.getMessage());
     }
+=======
+import org.springframework.web.bind.annotation.ControllerAdvice;
+
+@ControllerAdvice
+public class UserControllerAdvice {
+>>>>>>> fe7617241392bb75d124e6fb371c808ff38f26e4
 }
