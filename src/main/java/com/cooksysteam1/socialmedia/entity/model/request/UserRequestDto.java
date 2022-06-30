@@ -1,14 +1,16 @@
 package com.cooksysteam1.socialmedia.entity.model.request;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class UserRequestDto {
 	
-	private CredentialsRequestDto credentials;
+	private CredentialsDto credentials;
 	
-	private ProfileRequestDto profile;
+	private ProfileDto profile;
 	
 }

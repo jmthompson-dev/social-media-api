@@ -2,8 +2,7 @@ package com.cooksysteam1.socialmedia.entity;
 
 import com.cooksysteam1.socialmedia.entity.resource.Credentials;
 import com.cooksysteam1.socialmedia.entity.resource.Profile;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -12,7 +11,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "user_table")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 public class User {
 
