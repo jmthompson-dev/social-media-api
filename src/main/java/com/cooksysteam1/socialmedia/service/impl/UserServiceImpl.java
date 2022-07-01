@@ -147,4 +147,11 @@ public class UserServiceImpl implements UserService {
 		return userMapper.entitiesToResponses(
 				user.getFollowers().stream().filter(follower -> !follower.isDeleted()).collect(Collectors.toList()));
 	}
+
+	@Override
+	public List<UserResponseDto> getFollowing(String username) {
+		User user = getUserByUsername(username);
+		return userMapper.entitiesToResponses(
+				user.getFollowing().stream().filter(followee -> !followee.isDeleted()).collect(Collectors.toList()));
+	}
 }

@@ -20,4 +20,6 @@ public interface UserService {
     UserResponseDto getUserDtoByUsername(String username);
 
 	List<UserResponseDto> getFollowers(String username);
+
+	List<UserResponseDto> getFollowing(String username);
 }
