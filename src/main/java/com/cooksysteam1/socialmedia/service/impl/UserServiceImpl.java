@@ -1,5 +1,11 @@
 package com.cooksysteam1.socialmedia.service.impl;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.cooksysteam1.socialmedia.controller.exception.BadRequestException;
 import com.cooksysteam1.socialmedia.controller.exception.NotAuthorizedException;
 import com.cooksysteam1.socialmedia.controller.exception.NotFoundException;
@@ -10,15 +16,11 @@ import com.cooksysteam1.socialmedia.entity.model.request.UserRequestDto;
 import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
 import com.cooksysteam1.socialmedia.entity.resource.Credentials;
 import com.cooksysteam1.socialmedia.mapper.CredentialsMapper;
-import com.cooksysteam1.socialmedia.mapper.ProfileMapper;
 import com.cooksysteam1.socialmedia.mapper.UserMapper;
 import com.cooksysteam1.socialmedia.repository.UserRepository;
 import com.cooksysteam1.socialmedia.service.UserService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -128,19 +130,6 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 
-	private void validateOptionalUser(Optional<User> optionalUser) {
-		if (optionalUser.isEmpty()) {
-			throw new NotFoundException(
-					"No user found with username: " + optionalUser.get().getCredentials().getUsername());
-		}
-	}
-
-	private void validateUser(User user) {
-		if (user.isDeleted() || user == null) {
-			throw new NotFoundException("This user cannot be found.");
-		}
-	}
-
 	@Override
 	public List<UserResponseDto> getFollowers(String username) {
 		User user = getUserByUsername(username);
@@ -153,5 +142,21 @@ public class UserServiceImpl implements UserService {
 		User user = getUserByUsername(username);
 		return userMapper.entitiesToResponses(
 				user.getFollowing().stream().filter(followee -> !followee.isDeleted()).collect(Collectors.toList()));
+	}
+
+	@Override
+	public void followUser(String username, CredentialsDto credentialsDto) {
+		User userToFollow = getUserByUsername(username);
+		validateCredentialsRequestDto(credentialsDto);
+		User follower = getUserByUsername(credentialsDto.getUsername());
+		
+		if (follower.getFollowing().contains(userToFollow)) {
+			throw new BadRequestException(credentialsDto.getUsername() + " is already following " + username);
+		}
+		
+		follower.getFollowing().add(userToFollow);
+		userToFollow.getFollowers().add(follower);
+		userRepository.saveAndFlush(follower);
+		userRepository.saveAndFlush(userToFollow);
 	}
 }
