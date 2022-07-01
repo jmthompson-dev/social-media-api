@@ -3,9 +3,7 @@ package com.cooksysteam1.socialmedia.service.impl;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
-
 import com.cooksysteam1.socialmedia.controller.exception.BadRequestException;
 import com.cooksysteam1.socialmedia.controller.exception.NotAuthorizedException;
 import com.cooksysteam1.socialmedia.controller.exception.NotFoundException;
@@ -19,19 +17,12 @@ import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
 import com.cooksysteam1.socialmedia.entity.resource.Credentials;
 import com.cooksysteam1.socialmedia.mapper.CredentialsMapper;
 import com.cooksysteam1.socialmedia.mapper.TweetMapper;
-
 import com.cooksysteam1.socialmedia.mapper.UserMapper;
 import com.cooksysteam1.socialmedia.repository.TweetRepository;
 import com.cooksysteam1.socialmedia.repository.UserRepository;
 import com.cooksysteam1.socialmedia.service.UserService;
-
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 
 @Service
 @RequiredArgsConstructor
@@ -158,10 +149,30 @@ public class UserServiceImpl implements UserService {
 		userRepository.saveAndFlush(userToUnfollow);
 	}
 
+	/**
+	 * Retrieves all (non-deleted) tweets in which the user with the given username is mentioned.
+	 * The tweets should appear in reverse-chronological order.
+	 * If no active user with that username exists, an error should be sent in lieu of a response.
+	 *
+	 * A user is considered "mentioned" by a tweet if the tweet has content and the user's username appears in that content following a @.
+	 *
+	 * Response
+	 * ['Tweet']
+	 * @param username
+	 * @return
+	 */
+	@Override
+	public List<TweetResponseDto> getUserMentions(String username) {
+		User user = getUserByUsername(username);
+		List<Tweet> tweets = user.getTweetMentions();
+		tweets.sort(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
+		return tweetMapper.entitiesToResponses(tweets);
+	}
+
 	public User getUserByUsername(String username) {
 		validateUsername(username);
 		Optional<User> optionalUser = userRepository.findUserByCredentials_UsernameAndDeletedFalse(username);
-		return validateOptionalAndReturnsUser(optionalUser); // optionalUser.get();
+		return validateOptionalAndReturnsUser(optionalUser);
 	}
 
 	private void validateUserCredentialsAgainstCredentialsDto(Credentials userCredentials,
