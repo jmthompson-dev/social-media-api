@@ -80,6 +80,20 @@ public class UserServiceImpl implements UserService {
 		return userMapper.entityToResponse(user);
 	}
 
+	@Override
+	public List<UserResponseDto> getFollowers(String username) {
+		User user = getUserByUsername(username);
+		return userMapper.entitiesToResponses(
+				user.getFollowers().stream().filter(follower -> !follower.isDeleted()).collect(Collectors.toList()));
+	}
+
+	@Override
+	public List<UserResponseDto> getFollowing(String username) {
+		User user = getUserByUsername(username);
+		return userMapper.entitiesToResponses(
+				user.getFollowing().stream().filter(followee -> !followee.isDeleted()).collect(Collectors.toList()));
+	}
+
 	public User getUserByUsername(String username) {
 		validateUsername(username);
 		Optional<User> optionalUser = userRepository.findUserByCredentials_UsernameAndDeletedFalse(username);
@@ -126,32 +140,5 @@ public class UserServiceImpl implements UserService {
 				|| credentialsRequestDto.getPassword().isBlank()) {
 			throw new BadRequestException("Invalid credentials. Expected fields not to be null but was false.");
 		}
-	}
-
-	private void validateOptionalUser(Optional<User> optionalUser) {
-		if (optionalUser.isEmpty()) {
-			throw new NotFoundException(
-					"No user found with username: " + optionalUser.get().getCredentials().getUsername());
-		}
-	}
-
-	private void validateUser(User user) {
-		if (user.isDeleted() || user == null) {
-			throw new NotFoundException("This user cannot be found.");
-		}
-	}
-
-	@Override
-	public List<UserResponseDto> getFollowers(String username) {
-		User user = getUserByUsername(username);
-		return userMapper.entitiesToResponses(
-				user.getFollowers().stream().filter(follower -> !follower.isDeleted()).collect(Collectors.toList()));
-	}
-
-	@Override
-	public List<UserResponseDto> getFollowing(String username) {
-		User user = getUserByUsername(username);
-		return userMapper.entitiesToResponses(
-				user.getFollowing().stream().filter(followee -> !followee.isDeleted()).collect(Collectors.toList()));
 	}
 }
