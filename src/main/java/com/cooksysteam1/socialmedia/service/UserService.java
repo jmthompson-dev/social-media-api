@@ -24,4 +24,6 @@ public interface UserService {
 	List<UserResponseDto> getFollowing(String username);
 
 	void followUser(String username, CredentialsDto credentialsDto);
+
+	void unfollowUser(String username, CredentialsDto credentialsDto);
 }
