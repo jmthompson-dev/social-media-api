@@ -2,6 +2,7 @@ package com.cooksysteam1.socialmedia.service;
 
 import com.cooksysteam1.socialmedia.entity.model.request.CredentialsDto;
 import com.cooksysteam1.socialmedia.entity.model.request.UserRequestDto;
+import com.cooksysteam1.socialmedia.entity.model.response.TweetResponseDto;
 import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
 import com.cooksysteam1.socialmedia.entity.resource.Credentials;
 
@@ -23,6 +24,8 @@ public interface UserService {
 
 	List<UserResponseDto> getFollowing(String username);
 
+   List<TweetResponseDto> getTweetFeed(String username);
+    
 	void followUser(String username, CredentialsDto credentialsDto);
 
 	void unfollowUser(String username, CredentialsDto credentialsDto);

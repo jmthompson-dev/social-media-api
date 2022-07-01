@@ -2,6 +2,7 @@ package com.cooksysteam1.socialmedia.controller;
 
 import com.cooksysteam1.socialmedia.entity.model.request.CredentialsDto;
 import com.cooksysteam1.socialmedia.entity.model.request.UserRequestDto;
+import com.cooksysteam1.socialmedia.entity.model.response.TweetResponseDto;
 import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
 import com.cooksysteam1.socialmedia.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +56,11 @@ public class UserController {
     public List<UserResponseDto> getFollowing (@PathVariable String username) {
     	return userService.getFollowing(username);
     }
+
+    @GetMapping("/@{username}/feed")
+    @ResponseStatus(HttpStatus.FOUND)
+    public List<TweetResponseDto> getTweetFeed(@PathVariable String username) {
+        return userService.getTweetFeed(username);
     
     @PostMapping("/@{username}/follow")
     public void followUser (@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {

@@ -9,18 +9,29 @@ import org.springframework.stereotype.Service;
 import com.cooksysteam1.socialmedia.controller.exception.BadRequestException;
 import com.cooksysteam1.socialmedia.controller.exception.NotAuthorizedException;
 import com.cooksysteam1.socialmedia.controller.exception.NotFoundException;
+import com.cooksysteam1.socialmedia.entity.Tweet;
 import com.cooksysteam1.socialmedia.entity.User;
 import com.cooksysteam1.socialmedia.entity.model.request.CredentialsDto;
 import com.cooksysteam1.socialmedia.entity.model.request.ProfileDto;
 import com.cooksysteam1.socialmedia.entity.model.request.UserRequestDto;
+import com.cooksysteam1.socialmedia.entity.model.response.TweetResponseDto;
 import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
 import com.cooksysteam1.socialmedia.entity.resource.Credentials;
 import com.cooksysteam1.socialmedia.mapper.CredentialsMapper;
+import com.cooksysteam1.socialmedia.mapper.TweetMapper;
+
 import com.cooksysteam1.socialmedia.mapper.UserMapper;
+import com.cooksysteam1.socialmedia.repository.TweetRepository;
 import com.cooksysteam1.socialmedia.repository.UserRepository;
 import com.cooksysteam1.socialmedia.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +40,10 @@ public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 
 	private final UserMapper userMapper;
+
+	private final TweetRepository tweetRepository;
+
+	private final TweetMapper tweetMapper;
 
 	private final CredentialsMapper credentialsMapper;
 
@@ -82,6 +97,21 @@ public class UserServiceImpl implements UserService {
 		return userMapper.entityToResponse(user);
 	}
 
+	
+	@Override
+	public List<TweetResponseDto> getTweetFeed(String username) {
+		List<Tweet> tweets = tweetRepository.findTweetsByAuthor_DeletedFalseAndAuthor_Credentials_Username(username);
+		if (tweets.isEmpty()) throw new NotFoundException("Invalid username. Expected tweets to be present but was false.");
+		for (Tweet tweet : tweets) {
+			Tweet tweet1 = tweet.getRepostOf();
+			Tweet tweet2 = tweet.getInReplyTo();
+			if (tweet1 != null) tweets.add(tweet1);
+			if (tweet2 != null) tweets.add(tweet2);
+		}
+		tweets.sort(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
+		return tweetMapper.entitiesToResponses(tweets);
+ }
+ 
 	@Override
 	public List<UserResponseDto> getFollowing(String username) {
 		User user = getUserByUsername(username);
