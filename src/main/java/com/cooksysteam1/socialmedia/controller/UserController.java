@@ -61,9 +61,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.FOUND)
     public List<TweetResponseDto> getTweetFeed(@PathVariable String username) {
         return userService.getTweetFeed(username);
+    }
     
     @PostMapping("/@{username}/follow")
-    public void followUser (@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
+    public void followUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
     	userService.followUser(username, credentialsDto);
     }
     
