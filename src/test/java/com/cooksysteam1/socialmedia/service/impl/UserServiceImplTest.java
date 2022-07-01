@@ -10,7 +10,9 @@ import com.cooksysteam1.socialmedia.entity.resource.Credentials;
 import com.cooksysteam1.socialmedia.entity.resource.Profile;
 import com.cooksysteam1.socialmedia.mapper.CredentialsMapper;
 import com.cooksysteam1.socialmedia.mapper.ProfileMapper;
+import com.cooksysteam1.socialmedia.mapper.TweetMapper;
 import com.cooksysteam1.socialmedia.mapper.UserMapper;
+import com.cooksysteam1.socialmedia.repository.TweetRepository;
 import com.cooksysteam1.socialmedia.repository.UserRepository;
 import com.cooksysteam1.socialmedia.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +29,10 @@ class UserServiceImplTest {
 
     private UserMapper userMapper;
 
+    private TweetRepository tweetRepository;
+
+    private TweetMapper tweetMapper;
+
     private CredentialsMapper credentialsMapper;
 
     private UserService userService;
@@ -35,8 +41,10 @@ class UserServiceImplTest {
     void setup() {
         userRepository = mock(UserRepository.class);
         userMapper = mock(UserMapper.class);
+        tweetRepository = mock(TweetRepository.class);
+        tweetMapper = mock(TweetMapper.class);
         credentialsMapper = mock(CredentialsMapper.class);
-        userService = new UserServiceImpl(userRepository, userMapper, credentialsMapper);
+        userService = new UserServiceImpl(userRepository, userMapper, tweetRepository, tweetMapper, credentialsMapper);
     }
 
     @Test

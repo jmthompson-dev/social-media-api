@@ -2,6 +2,7 @@ package com.cooksysteam1.socialmedia.controller;
 
 import com.cooksysteam1.socialmedia.entity.model.request.CredentialsDto;
 import com.cooksysteam1.socialmedia.entity.model.request.UserRequestDto;
+import com.cooksysteam1.socialmedia.entity.model.response.TweetResponseDto;
 import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
 import com.cooksysteam1.socialmedia.entity.resource.Credentials;
 import com.cooksysteam1.socialmedia.service.UserService;
@@ -55,5 +56,11 @@ public class UserController {
     @GetMapping("/@{username}/following")
     public List<UserResponseDto> getFollowing (@PathVariable String username) {
     	return userService.getFollowing(username);
+    }
+
+    @GetMapping("/@{username}/feed")
+    @ResponseStatus(HttpStatus.FOUND)
+    public List<TweetResponseDto> getTweetFeed(@PathVariable String username) {
+        return userService.getTweetFeed(username);
     }
 }
