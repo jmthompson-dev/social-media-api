@@ -82,6 +82,66 @@ public class UserServiceImpl implements UserService {
 		return userMapper.entityToResponse(user);
 	}
 
+	@Override
+	public List<UserResponseDto> getFollowers(String username) {
+		User user = getUserByUsername(username);
+		return userMapper.entitiesToResponses(
+				user.getFollowers().stream().filter(follower -> !follower.isDeleted()).collect(Collectors.toList()));
+	}
+
+	@Override
+	public List<UserResponseDto> getFollowing(String username) {
+		User user = getUserByUsername(username);
+		return userMapper.entitiesToResponses(
+				user.getFollowing().stream().filter(followee -> !followee.isDeleted()).collect(Collectors.toList()));
+	}
+  
+  @Override
+	public List<UserResponseDto> getFollowers(String username) {
+		User user = getUserByUsername(username);
+		return userMapper.entitiesToResponses(
+				user.getFollowers().stream().filter(follower -> !follower.isDeleted()).collect(Collectors.toList()));
+	}
+
+	@Override
+	public List<UserResponseDto> getFollowing(String username) {
+		User user = getUserByUsername(username);
+		return userMapper.entitiesToResponses(
+				user.getFollowing().stream().filter(followee -> !followee.isDeleted()).collect(Collectors.toList()));
+	}
+
+	@Override
+	public void followUser(String username, CredentialsDto credentialsDto) {
+		User userToFollow = getUserByUsername(username);
+		validateCredentialsRequestDto(credentialsDto);
+		User follower = getUserByUsername(credentialsDto.getUsername());
+		
+		if (follower.getFollowing().contains(userToFollow)) {
+			throw new BadRequestException(credentialsDto.getUsername() + " is already following " + username);
+		}
+		
+		follower.getFollowing().add(userToFollow);
+		userToFollow.getFollowers().add(follower);
+		userRepository.saveAndFlush(follower);
+		userRepository.saveAndFlush(userToFollow);
+	}
+
+	@Override
+	public void unfollowUser(String username, CredentialsDto credentialsDto) {
+		User userToUnfollow = getUserByUsername(username);
+		validateCredentialsRequestDto(credentialsDto);
+		User follower = getUserByUsername(credentialsDto.getUsername());
+		
+		if (!follower.getFollowing().contains(userToUnfollow)) {
+			throw new BadRequestException(credentialsDto.getUsername() + " is not currently following " + username);
+		}
+		
+		follower.getFollowing().remove(userToUnfollow);
+		userToUnfollow.getFollowers().remove(follower);
+		userRepository.saveAndFlush(follower);
+		userRepository.saveAndFlush(userToUnfollow);
+	}
+
 	public User getUserByUsername(String username) {
 		validateUsername(username);
 		Optional<User> optionalUser = userRepository.findUserByCredentials_UsernameAndDeletedFalse(username);
@@ -128,51 +188,5 @@ public class UserServiceImpl implements UserService {
 				|| credentialsRequestDto.getPassword().isBlank()) {
 			throw new BadRequestException("Invalid credentials. Expected fields not to be null but was false.");
 		}
-	}
-
-	@Override
-	public List<UserResponseDto> getFollowers(String username) {
-		User user = getUserByUsername(username);
-		return userMapper.entitiesToResponses(
-				user.getFollowers().stream().filter(follower -> !follower.isDeleted()).collect(Collectors.toList()));
-	}
-
-	@Override
-	public List<UserResponseDto> getFollowing(String username) {
-		User user = getUserByUsername(username);
-		return userMapper.entitiesToResponses(
-				user.getFollowing().stream().filter(followee -> !followee.isDeleted()).collect(Collectors.toList()));
-	}
-
-	@Override
-	public void followUser(String username, CredentialsDto credentialsDto) {
-		User userToFollow = getUserByUsername(username);
-		validateCredentialsRequestDto(credentialsDto);
-		User follower = getUserByUsername(credentialsDto.getUsername());
-		
-		if (follower.getFollowing().contains(userToFollow)) {
-			throw new BadRequestException(credentialsDto.getUsername() + " is already following " + username);
-		}
-		
-		follower.getFollowing().add(userToFollow);
-		userToFollow.getFollowers().add(follower);
-		userRepository.saveAndFlush(follower);
-		userRepository.saveAndFlush(userToFollow);
-	}
-
-	@Override
-	public void unfollowUser(String username, CredentialsDto credentialsDto) {
-		User userToUnfollow = getUserByUsername(username);
-		validateCredentialsRequestDto(credentialsDto);
-		User follower = getUserByUsername(credentialsDto.getUsername());
-		
-		if (!follower.getFollowing().contains(userToUnfollow)) {
-			throw new BadRequestException(credentialsDto.getUsername() + " is not currently following " + username);
-		}
-		
-		follower.getFollowing().remove(userToUnfollow);
-		userToUnfollow.getFollowers().remove(follower);
-		userRepository.saveAndFlush(follower);
-		userRepository.saveAndFlush(userToUnfollow);
 	}
 }
