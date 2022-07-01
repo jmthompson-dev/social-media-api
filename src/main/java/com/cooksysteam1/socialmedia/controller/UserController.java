@@ -4,7 +4,6 @@ import com.cooksysteam1.socialmedia.entity.model.request.CredentialsDto;
 import com.cooksysteam1.socialmedia.entity.model.request.UserRequestDto;
 import com.cooksysteam1.socialmedia.entity.model.response.TweetResponseDto;
 import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
-import com.cooksysteam1.socialmedia.entity.resource.Credentials;
 import com.cooksysteam1.socialmedia.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,5 +61,14 @@ public class UserController {
     @ResponseStatus(HttpStatus.FOUND)
     public List<TweetResponseDto> getTweetFeed(@PathVariable String username) {
         return userService.getTweetFeed(username);
+    
+    @PostMapping("/@{username}/follow")
+    public void followUser (@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
+    	userService.followUser(username, credentialsDto);
+    }
+    
+    @PostMapping("/@{username}/unfollow")
+    public void unfollowUser (@PathVariable String username, @RequestBody CredentialsDto credentialsDto) {
+    	userService.unfollowUser(username, credentialsDto);
     }
 }
