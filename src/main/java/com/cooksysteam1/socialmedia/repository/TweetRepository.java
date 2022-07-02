@@ -7,8 +7,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TweetRepository extends JpaRepository<Tweet, Long> {
-	
+
+
 	List<Tweet> findAllByDeleteFalseOrderByPostedDesc();
 
 	List<Tweet> findTweetsByAuthor_DeletedFalseAndAuthor_Credentials_Username(String username);
+
+//	List<Tweet> findTweetsByDeleteFalseAndContentContainingLabelIgnoreCaseOrderByPostedDesc(String label);
 }
