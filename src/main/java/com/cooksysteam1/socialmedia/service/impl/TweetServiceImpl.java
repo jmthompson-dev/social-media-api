@@ -7,7 +7,9 @@ import com.cooksysteam1.socialmedia.entity.Tweet;
 import com.cooksysteam1.socialmedia.entity.User;
 import com.cooksysteam1.socialmedia.entity.model.request.CredentialsDto;
 import com.cooksysteam1.socialmedia.entity.model.response.TweetResponseDto;
+import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
 import com.cooksysteam1.socialmedia.mapper.TweetMapper;
+import com.cooksysteam1.socialmedia.mapper.UserMapper;
 import com.cooksysteam1.socialmedia.repository.TweetRepository;
 import com.cooksysteam1.socialmedia.repository.UserRepository;
 import com.cooksysteam1.socialmedia.service.TweetService;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -26,6 +29,7 @@ public class TweetServiceImpl implements TweetService {
 	private final TweetMapper tweetMapper;
 	private final TweetRepository tweetRepository;
 	private final UserRepository userRepository;
+	private final UserMapper userMapper;
 
 	@Override
 	public List<TweetResponseDto> getAllTweets() {
@@ -59,6 +63,25 @@ public class TweetServiceImpl implements TweetService {
 		return tweetMapper.entityToResponse(tweetRepository.saveAndFlush(tweetToDelete));
 	}
 
+	@Override
+	public void likeTweetById(Long id, CredentialsDto credentialsDto) {
+		Tweet tweetToLike = getTweetById(id);
+		validateCredentialsRequestDto(credentialsDto);
+		User user = getUserByUsernameAndPassword(credentialsDto.getUsername(), credentialsDto.getPassword());
+
+		user.getTweetLikes().add(tweetToLike);
+		tweetToLike.getUserLikes().add(user);
+		userRepository.saveAndFlush(user);
+		tweetRepository.saveAndFlush(tweetToLike);
+	}
+
+	@Override
+	public List<UserResponseDto> getLikesOfTweet(Long id) {
+		Tweet tweet = getTweetById(id);
+		return userMapper.entitiesToResponses(
+				tweet.getUserLikes().stream().filter(liker -> !liker.isDeleted()).collect(Collectors.toList()));
+	}
+
 	public User getUserByUsernameAndPassword(String username, String password) {
 		Optional<User> optionalUser = userRepository
 				.findUserByCredentials_UsernameAndCredentials_PasswordAndDeletedFalse(username, password);
@@ -66,8 +89,8 @@ public class TweetServiceImpl implements TweetService {
 	}
 
 	private User validateOptionalAndReturnsUser(Optional<User> userOptional) {
-		return userOptional.orElseThrow(
-				() -> new NotFoundException("Invalid credentials. Expected to find a user by credential info but was false."));
+		return userOptional.orElseThrow(() -> new NotFoundException(
+				"Invalid credentials. Expected to find a user by credential info but was false."));
 	}
 
 	private void validateCredentialsRequestDto(CredentialsDto credentialsRequestDto) {
