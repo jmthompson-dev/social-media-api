@@ -122,7 +122,7 @@ public class TweetServiceImpl implements TweetService {
 
 	private Tweet validateOptionalAndReturnsTweet(Optional<Tweet> tweetOptional) {
 		Tweet tweet = tweetOptional.orElseThrow(() -> new NotFoundException
-			("Invalid credentials. Expected to find a user by credential info but was false."));
+			("Invalid tweet id. Expected to find a tweet by id but was false."));
 		if (tweet.isDelete()) throw new BadRequestException("Tweet could not be found.");
 		return tweet;
 	}
