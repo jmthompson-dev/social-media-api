@@ -102,14 +102,12 @@ public class TweetServiceImpl implements TweetService {
 		}
 
 		if (!contextBefore.isEmpty()) {
-			contextBefore.stream().filter(Tweet::isDelete).collect(Collectors.toList());
-			contextBefore.sort(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
+			contextBefore.stream().filter(Tweet::isDelete).sorted(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
 			context.setBefore(contextBefore);
 		}
 
 		if (!contextAfter.isEmpty()){
-			contextAfter.stream().filter(Tweet::isDelete).collect(Collectors.toList());
-			contextAfter.sort(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
+			contextAfter.stream().filter(Tweet::isDelete).sorted(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
 			context.setAfter(contextAfter);
 		}
 	}
