@@ -12,7 +12,6 @@ import java.util.List;
 @Table(name = "tweet")
 @Getter
 @Setter
-@EqualsAndHashCode
 @NoArgsConstructor
 public class Tweet {
 
@@ -39,6 +38,9 @@ public class Tweet {
 
     @ManyToOne
     private Tweet inReplyTo;
+
+    @OneToMany(mappedBy = "inReplyTo")
+    private List<Tweet> replies;
 
     @ManyToOne
     private Tweet repostOf;
