@@ -1,5 +1,6 @@
 package com.cooksysteam1.socialmedia.repository;
 
+import com.cooksysteam1.socialmedia.entity.Hashtag;
 import com.cooksysteam1.socialmedia.entity.User;
 import com.cooksysteam1.socialmedia.entity.resource.Credentials;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findUserByCredentials_UsernameAndDeletedFalse(String username);
     
     Optional<User> findUserByCredentials_UsernameAndCredentials_PasswordAndDeletedFalse(String username, String password);
+
+	Optional<Hashtag> findUserByCredentials_Username(String username);
 }
