@@ -81,18 +81,37 @@ public class TweetServiceImpl implements TweetService {
 		Tweet targetTweet = getTweetById(id);
 		Context context = new Context();
 		context.setTarget(targetTweet);
-		context.setBefore(buildContextBeforeOrAfter(targetTweet.getRepostOf(), (Tweet::getReposts)));
-		context.setAfter(buildContextBeforeOrAfter(targetTweet.getInReplyTo(), (Tweet::getReplies)));
+		setContextBeforeOrAfter(targetTweet, context);
 		return contextMapper.entityToResponse(context);
 	}
 
-	private List<Tweet> buildContextBeforeOrAfter(Tweet tweet, Function<Tweet, List<Tweet>> func) {
-		if (tweet == null) return null;
-		HashSet<Tweet> tweetSet = new HashSet<>();
-		tweetSet.add(tweet);
-		List<Tweet> tweets = func.apply(tweet);
-		if (tweets != null && !tweets.isEmpty()) tweetSet.addAll(tweets);
-		return tweetSet.stream().filter(Tweet::isDelete).collect(Collectors.toList());
+	private void setContextBeforeOrAfter(Tweet targetTweet, Context context) {
+		Tweet inReplyTo = targetTweet.getInReplyTo();
+		List<Tweet> contextBefore = new ArrayList<>();
+		List<Tweet> contextAfter = new ArrayList<>(targetTweet.getReplies());
+		ListIterator<Tweet> tweetIterator = targetTweet.getReplies().listIterator();
+
+		while (inReplyTo != null ) {
+			contextBefore.add(inReplyTo);
+			inReplyTo = inReplyTo.getInReplyTo();
+		}
+
+		while (tweetIterator.hasNext()) {
+			Tweet current = tweetIterator.next();
+			if (!current.getReplies().isEmpty()) contextAfter.addAll(current.getReplies());
+		}
+
+		if (!contextBefore.isEmpty()) {
+			contextBefore.stream().filter(Tweet::isDelete).collect(Collectors.toList());
+			contextBefore.sort(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
+			context.setBefore(contextBefore);
+		}
+
+		if (!contextAfter.isEmpty()){
+			contextAfter.stream().filter(Tweet::isDelete).collect(Collectors.toList());
+			contextAfter.sort(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
+			context.setAfter(contextAfter);
+		}
 	}
 
 	private Tweet getTweetById(Long id) {

@@ -149,18 +149,6 @@ public class UserServiceImpl implements UserService {
 		userRepository.saveAndFlush(userToUnfollow);
 	}
 
-	/**
-	 * Retrieves all (non-deleted) tweets in which the user with the given username is mentioned.
-	 * The tweets should appear in reverse-chronological order.
-	 * If no active user with that username exists, an error should be sent in lieu of a response.
-	 *
-	 * A user is considered "mentioned" by a tweet if the tweet has content and the user's username appears in that content following a @.
-	 *
-	 * Response
-	 * ['Tweet']
-	 * @param username
-	 * @return
-	 */
 	@Override
 	public List<TweetResponseDto> getUserMentions(String username) {
 		User user = getUserByUsername(username);
