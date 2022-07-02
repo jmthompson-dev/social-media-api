@@ -95,7 +95,7 @@ public class TweetServiceImpl implements TweetService {
 		return tweetSet.stream().filter(Tweet::isDelete).collect(Collectors.toList());
 	}
 
-	public Tweet getTweetById(Long id) {
+	private Tweet getTweetById(Long id) {
 		validateTweetId(id);
 		Optional<Tweet> tweetOptional = tweetRepository.findTweetByDeleteFalseAndId(id);
 		return validateOptionalAndReturnsTweet(tweetOptional);
