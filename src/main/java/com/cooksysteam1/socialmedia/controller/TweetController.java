@@ -2,6 +2,7 @@ package com.cooksysteam1.socialmedia.controller;
 
 import java.util.List;
 
+import com.cooksysteam1.socialmedia.entity.model.request.TweetRequestDto;
 import com.cooksysteam1.socialmedia.entity.model.response.ContextDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -47,5 +48,11 @@ public class TweetController {
 	@ResponseStatus(HttpStatus.FOUND)
 	public ContextDto getContextById(@PathVariable Long id) {
 		return tweetService.getContextById(id);
+	}
+
+	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
+	public TweetResponseDto createTweet(@RequestBody TweetRequestDto tweetRequestDto) {
+		return tweetService.createTweet(tweetRequestDto);
 	}
 }

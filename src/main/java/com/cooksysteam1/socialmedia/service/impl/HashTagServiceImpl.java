@@ -31,7 +31,7 @@ public class HashTagServiceImpl implements HashtagService {
 
 	@Override
 	public List<TweetResponseDto> getHashtagsByLabel(String label) {
-		List<Tweet>tweets = getHashtagByLabel(label).getTweets();
+		List<Tweet>tweets = getValidHashtagByLabel(label).getTweets();
 		tweets.sort(Comparator.comparing(Tweet::getPosted).reversed());
 		return tweetMapper.entitiesToResponses(tweets);
 	}
@@ -42,7 +42,7 @@ public class HashTagServiceImpl implements HashtagService {
 				("Invalid username. Expected username to not be null or empty but was false.");
 	}
 
-	public Hashtag getHashtagByLabel(String label) {
+	public Hashtag getValidHashtagByLabel(String label) {
 		validateLabel(label);
 		Optional<Hashtag> hashtagOptional = hashtagRepository.findHashtagByLabelIgnoreCase(label);
 		return validateOptionalAndReturnsHashtag(hashtagOptional);
