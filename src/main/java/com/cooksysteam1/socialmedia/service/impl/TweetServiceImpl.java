@@ -95,7 +95,10 @@ public class TweetServiceImpl implements TweetService {
 
 	@Override
 	public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
-		Tweet tweet = createNewValidatedTweet(tweetRequestDto);
+		validateCredentialsRequestDto(tweetRequestDto.getCredentials());
+		String content = tweetRequestDto.getContent();
+		stringValidator(content);
+		Tweet tweet = createNewValidatedTweet(null, tweetRequestDto);
 		User user = tweet.getAuthor();
 		user.getTweets().add(tweet);
 		userRepository.save(user);
@@ -104,34 +107,45 @@ public class TweetServiceImpl implements TweetService {
 
 	@Override
 	public TweetResponseDto createReplyTweet(Long id, TweetRequestDto tweetRequestDto) {
+		validateCredentialsRequestDto(tweetRequestDto.getCredentials());
+		String content = tweetRequestDto.getContent();
+		stringValidator(content);
 		Tweet inReplyToTweet = getTweetById(id);
-		Tweet tweetReply = createNewValidatedTweet(tweetRequestDto);
+		Tweet tweetReply = createNewValidatedTweet(content, tweetRequestDto);
 		inReplyToTweet.getReplies().add(tweetReply);
 		tweetReply.setInReplyTo(inReplyToTweet);
 		tweetRepository.save(inReplyToTweet);
 		return tweetMapper.entityToResponse(tweetRepository.saveAndFlush(tweetReply));
 	}
 
-	private Tweet createNewValidatedTweet(TweetRequestDto tweetRequestDto) {
+	@Override
+	public TweetResponseDto createRepostTweet(Long id, TweetRequestDto tweetRequestDto) {
 		validateCredentialsRequestDto(tweetRequestDto.getCredentials());
-		User user = getUserByUsernameAndPassword(tweetRequestDto.getCredentials().getUsername(), tweetRequestDto.getCredentials().getPassword());
-		String content = tweetRequestDto.getContent();
-		stringValidator(content);
-		List<User> mentions = parseLabelForMentions(content);
-		List<Hashtag> hashtags = parseLabelForHashtags(content);
+		Tweet repostOfTweet = getTweetById(id);
+		Tweet repostTweet = createNewValidatedTweet(null, tweetRequestDto);
+		repostOfTweet.getReposts().add(repostOfTweet);
+		repostTweet.setRepostOf(repostOfTweet);
+		tweetRepository.save(repostOfTweet);
+		return tweetMapper.entityToResponse(tweetRepository.saveAndFlush(repostTweet));
+	}
 
+
+	private Tweet createNewValidatedTweet(String content, TweetRequestDto tweetRequestDto) {
+		User user = getUserByUsernameAndPassword(tweetRequestDto.getCredentials().getUsername(), tweetRequestDto.getCredentials().getPassword());
 		Tweet tweet = new Tweet();
+		if (content != null) {
+			List<User> mentions = parseLabelForMentions(content);
+			List<Hashtag> hashtags = parseLabelForHashtags(content);
+			tweet.setHashtags(hashtags);
+			tweet.setUserMentions(mentions);
+			if (!hashtags.isEmpty()) {
+				for (Hashtag hashtag : hashtags) hashtag.getTweets().add(tweet);
+				hashtagRepository.saveAllAndFlush(hashtags);
+			}
+		}
 		tweet.setContent(content);
 		tweet.setAuthor(user);
-		tweet.setHashtags(hashtags);
-		tweet.setUserMentions(mentions);
 		tweet = tweetRepository.saveAndFlush(tweet);
-
-		Tweet finalTweet = tweet;
-		if (!hashtags.isEmpty()) {
-			hashtags.forEach(hashtag -> hashtag.getTweets().add(finalTweet));
-			hashtagRepository.saveAllAndFlush(hashtags);
-		}
 		return tweet;
 	}
 
@@ -244,14 +258,14 @@ public class TweetServiceImpl implements TweetService {
 
 	private User validateOptionalAndReturnsUser(Optional<User> userOptional) {
 		return userOptional.orElseThrow(() -> new NotFoundException
-				("Invalid credentials. Expected to find a user by credential info but was false."));
+			("Invalid credentials. Expected to find a user by credential info but was false."));
 	}
 
 	private void validateCredentialsRequestDto(CredentialsDto credentialsRequestDto) {
 		if (credentialsRequestDto == null || credentialsRequestDto.getUsername() == null
-			|| credentialsRequestDto.getPassword() == null || credentialsRequestDto.getUsername().isBlank()
-			|| credentialsRequestDto.getPassword().isBlank()) {
-			throw new BadRequestException("Invalid credentials. Expected fields not to be null but was false.");
+		|| credentialsRequestDto.getPassword() == null || credentialsRequestDto.getUsername().isBlank()
+		|| credentialsRequestDto.getPassword().isBlank()) {
+		throw new BadRequestException("Invalid credentials. Expected fields not to be null but was false.");
 		}
 	}
 
