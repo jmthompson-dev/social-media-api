@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Data
-public class ContextResponseDto {
+public class ContextDto {
 	
 	private TweetResponseDto target;
 	

@@ -2,9 +2,9 @@ package com.cooksysteam1.socialmedia.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.cooksysteam1.socialmedia.entity.model.response.TweetResponseDto;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 import com.cooksysteam1.socialmedia.entity.model.response.HashtagResponseDto;
 import com.cooksysteam1.socialmedia.service.HashtagService;
@@ -22,6 +22,10 @@ public class HashTagController {
 	public List<HashtagResponseDto> getAllHashtags() {
 		return hashtagService.getAllHashtags();
 	}
-	
-	
+
+	@GetMapping("/{label}")
+	@ResponseStatus(HttpStatus.FOUND)
+	public List<TweetResponseDto> getHashtagsByLabel(@PathVariable String label) {
+		return hashtagService.getHashtagsByLabel(label);
+	}
 }
