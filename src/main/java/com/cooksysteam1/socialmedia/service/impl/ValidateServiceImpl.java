@@ -15,4 +15,9 @@ public class ValidateServiceImpl implements ValidateService {
     public boolean checkIfUsernameExist(String username) {
         return userRepository.existsByCredentials_UsernameAndDeletedFalse(username);
     }
+
+    @Override
+    public boolean checkUsernameAvailable(String username) {
+        return userRepository.existsByCredentials_Username(username);
+    }
 }
