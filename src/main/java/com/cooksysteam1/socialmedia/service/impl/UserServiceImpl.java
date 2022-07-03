@@ -144,7 +144,14 @@ public class UserServiceImpl implements UserService {
 		return tweetMapper.entitiesToResponses(tweets);
 	}
 
-	public User getUserByUsername(String username) {
+	@Override
+	public List<TweetResponseDto> getUserTweets(String username) {
+		User user = getUserByUsername(username);
+		List<Tweet> tweets = user.getTweets();
+		return tweetMapper.entitiesToResponses(tweets);
+	}
+
+	private User getUserByUsername(String username) {
 		validateUsername(username);
 		Optional<User> optionalUser = userRepository.findUserByCredentials_UsernameAndDeletedFalse(username);
 		return validateOptionalAndReturnsUser(optionalUser);
