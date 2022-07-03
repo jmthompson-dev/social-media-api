@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 public class TweetServiceImpl implements TweetService {
 
 	private final TweetMapper tweetMapper;
+
 	private final TweetRepository tweetRepository;
 	private final UserRepository userRepository;
 	private final UserMapper userMapper;

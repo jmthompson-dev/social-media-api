@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
 		validateUserRequestDto(userRequestDto);
 		validateUsername(username);
 		Optional<User> userOptional = userRepository
-				.findUserByCredentials(credentialsMapper.requestToEntity(userRequestDto.getCredentials()));
+			.findUserByCredentials(credentialsMapper.requestToEntity(userRequestDto.getCredentials()));
 		User user = validateOptionalAndReturnsUser(userOptional);
 		user.getCredentials().setUsername(username);
 		return userMapper.entityToResponse(userRepository.saveAndFlush(user));
@@ -71,14 +71,13 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserResponseDto createAUser(UserRequestDto userRequestDto) {
 		validateUserRequestDto(userRequestDto);
-		Optional<User> userOptional = userRepository
-				.findUserByCredentials(credentialsMapper.requestToEntity(userRequestDto.getCredentials()));
+		Optional<User> userOptional = userRepository.findUserByCredentials
+			(credentialsMapper.requestToEntity(userRequestDto.getCredentials()));
 		User user = validateOptionalAndReturnsUser(userOptional);
 		if (user.getId() != null) {
 			validateUserAccountReactivation(user.getCredentials());
 			user.setDeleted(false);
 		}
-
 		return userMapper.entityToResponse(userRepository.saveAndFlush(user));
 	}
 
@@ -93,12 +92,7 @@ public class UserServiceImpl implements UserService {
 	public List<TweetResponseDto> getTweetFeed(String username) {
 		List<Tweet> tweets = tweetRepository.findTweetsByAuthor_DeletedFalseAndAuthor_Credentials_Username(username);
 		if (tweets.isEmpty()) throw new NotFoundException("Invalid username. Expected tweets to be present but was false.");
-		for (Tweet tweet : tweets) {
-			Tweet tweet1 = tweet.getRepostOf();
-			Tweet tweet2 = tweet.getInReplyTo();
-			if (tweet1 != null) tweets.add(tweet1);
-			if (tweet2 != null) tweets.add(tweet2);
-		}
+		tweets.stream().filter(Objects::isNull).forEach(tweet -> tweets.addAll(List.of(tweet.getInReplyTo(), tweet.getRepostOf())));
 		tweets.sort(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
 		return tweetMapper.entitiesToResponses(tweets);
  }
@@ -106,15 +100,15 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public List<UserResponseDto> getFollowing(String username) {
 		User user = getUserByUsername(username);
-		return userMapper.entitiesToResponses(
-				user.getFollowing().stream().filter(followee -> !followee.isDeleted()).collect(Collectors.toList()));
+		return userMapper.entitiesToResponses
+			(user.getFollowing().stream().filter(followee -> !followee.isDeleted()).collect(Collectors.toList()));
 	}
   
-  @Override
+  	@Override
 	public List<UserResponseDto> getFollowers(String username) {
 		User user = getUserByUsername(username);
-		return userMapper.entitiesToResponses(
-				user.getFollowers().stream().filter(follower -> !follower.isDeleted()).collect(Collectors.toList()));
+		return userMapper.entitiesToResponses
+				(user.getFollowers().stream().filter(follower -> !follower.isDeleted()).collect(Collectors.toList()));
 	}
 
 	@Override
@@ -122,11 +116,8 @@ public class UserServiceImpl implements UserService {
 		User userToFollow = getUserByUsername(username);
 		validateCredentialsRequestDto(credentialsDto);
 		User follower = getUserByUsername(credentialsDto.getUsername());
-		
-		if (follower.getFollowing().contains(userToFollow)) {
+		if (follower.getFollowing().contains(userToFollow))
 			throw new BadRequestException(credentialsDto.getUsername() + " is already following " + username);
-		}
-		
 		follower.getFollowing().add(userToFollow);
 		userToFollow.getFollowers().add(follower);
 		userRepository.saveAndFlush(follower);
@@ -138,34 +129,18 @@ public class UserServiceImpl implements UserService {
 		User userToUnfollow = getUserByUsername(username);
 		validateCredentialsRequestDto(credentialsDto);
 		User follower = getUserByUsername(credentialsDto.getUsername());
-		
-		if (!follower.getFollowing().contains(userToUnfollow)) {
+		if (!follower.getFollowing().contains(userToUnfollow))
 			throw new BadRequestException(credentialsDto.getUsername() + " is not currently following " + username);
-		}
-		
 		follower.getFollowing().remove(userToUnfollow);
 		userToUnfollow.getFollowers().remove(follower);
 		userRepository.saveAndFlush(follower);
 		userRepository.saveAndFlush(userToUnfollow);
 	}
 
-	/**
-	 * Retrieves all (non-deleted) tweets in which the user with the given username is mentioned.
-	 * The tweets should appear in reverse-chronological order.
-	 * If no active user with that username exists, an error should be sent in lieu of a response.
-	 *
-	 * A user is considered "mentioned" by a tweet if the tweet has content and the user's username appears in that content following a @.
-	 *
-	 * Response
-	 * ['Tweet']
-	 * @param username
-	 * @return
-	 */
 	@Override
 	public List<TweetResponseDto> getUserMentions(String username) {
 		User user = getUserByUsername(username);
 		List<Tweet> tweets = user.getTweetMentions();
-		tweets.sort(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
 		return tweetMapper.entitiesToResponses(tweets);
 	}
 
@@ -175,15 +150,14 @@ public class UserServiceImpl implements UserService {
 		return validateOptionalAndReturnsUser(optionalUser);
 	}
 
-	private void validateUserCredentialsAgainstCredentialsDto(Credentials userCredentials,
-			CredentialsDto credentialsDto) {
+	private void validateUserCredentialsAgainstCredentialsDto(Credentials userCredentials, CredentialsDto credentialsDto) {
 		if (!userCredentials.equals(credentialsMapper.requestToEntity(credentialsDto)))
-			throw new NotAuthorizedException("Invalid credentials. Expected credentials to ,atch but was false.");
+			throw new NotAuthorizedException("Invalid credentials. Expected credentials to match but was false.");
 	}
 
 	private User validateOptionalAndReturnsUser(Optional<User> userOptional) {
-		return userOptional.orElseThrow(
-				() -> new NotFoundException("Invalid username. Expected to find a user by username but was false."));
+		return userOptional.orElseThrow
+				(() -> new NotFoundException("Invalid username. Expected to find a user by username but was false."));
 	}
 
 	private void validateUserAccountReactivation(Credentials credentials) {
@@ -205,14 +179,14 @@ public class UserServiceImpl implements UserService {
 
 	private void validateUsername(String username) {
 		if (username == null || username.isBlank())
-			throw new NotAuthorizedException(
-					"Invalid username. Expected username to not be null or empty but was false.");
+			throw new NotAuthorizedException
+				("Invalid username. Expected username to not be null or empty but was false.");
 	}
 
 	private void validateCredentialsRequestDto(CredentialsDto credentialsRequestDto) {
 		if (credentialsRequestDto == null || credentialsRequestDto.getUsername() == null
-				|| credentialsRequestDto.getPassword() == null || credentialsRequestDto.getUsername().isBlank()
-				|| credentialsRequestDto.getPassword().isBlank()) {
+			|| credentialsRequestDto.getPassword() == null || credentialsRequestDto.getUsername().isBlank()
+			|| credentialsRequestDto.getPassword().isBlank()) {
 			throw new BadRequestException("Invalid credentials. Expected fields not to be null but was false.");
 		}
 	}
