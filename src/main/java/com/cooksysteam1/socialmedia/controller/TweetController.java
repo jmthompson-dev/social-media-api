@@ -55,4 +55,10 @@ public class TweetController {
 	public TweetResponseDto createTweet(@RequestBody TweetRequestDto tweetRequestDto) {
 		return tweetService.createTweet(tweetRequestDto);
 	}
+
+	@PostMapping("/{id}/reply")
+	@ResponseStatus(HttpStatus.CREATED)
+	public TweetResponseDto createReplyTweet(@PathVariable Long id, @RequestBody TweetRequestDto tweetRequestDto) {
+		return tweetService.createReplyTweet(id, tweetRequestDto);
+	}
 }

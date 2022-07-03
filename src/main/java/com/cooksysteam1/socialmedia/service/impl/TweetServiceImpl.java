@@ -93,20 +93,26 @@ public class TweetServiceImpl implements TweetService {
 		return contextMapper.entityToResponse(context);
 	}
 
-	/**
-	 * Creates a new simple tweet, with the author set to the user identified by the credentials in the request body.
-	 * If the given credentials do not match an active user in the database, an error should be sent in lieu of a response.
-	 *
-	 * The response should contain the newly-created tweet.
-	 *
-	 * Because this always creates a simple tweet, it must have a content property and may not have inReplyTo or repostOf properties.
-	 *
-	 * IMPORTANT: when a tweet with content is created, the server must process the tweet's content for @{username} mentions and #{hashtag} tags.
-	 * There is no way to create hashtags or create mentions from the API, so this must be handled automatically!
-	 *
-	 */
 	@Override
 	public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
+		Tweet tweet = createNewValidatedTweet(tweetRequestDto);
+		User user = tweet.getAuthor();
+		user.getTweets().add(tweet);
+		userRepository.save(user);
+		return tweetMapper.entityToResponse(tweet);
+	}
+
+	@Override
+	public TweetResponseDto createReplyTweet(Long id, TweetRequestDto tweetRequestDto) {
+		Tweet inReplyToTweet = getTweetById(id);
+		Tweet tweetReply = createNewValidatedTweet(tweetRequestDto);
+		inReplyToTweet.getReplies().add(tweetReply);
+		tweetReply.setInReplyTo(inReplyToTweet);
+		tweetRepository.save(inReplyToTweet);
+		return tweetMapper.entityToResponse(tweetRepository.saveAndFlush(tweetReply));
+	}
+
+	private Tweet createNewValidatedTweet(TweetRequestDto tweetRequestDto) {
 		validateCredentialsRequestDto(tweetRequestDto.getCredentials());
 		User user = getUserByUsernameAndPassword(tweetRequestDto.getCredentials().getUsername(), tweetRequestDto.getCredentials().getPassword());
 		String content = tweetRequestDto.getContent();
@@ -126,11 +132,7 @@ public class TweetServiceImpl implements TweetService {
 			hashtags.forEach(hashtag -> hashtag.getTweets().add(finalTweet));
 			hashtagRepository.saveAllAndFlush(hashtags);
 		}
-
-		user.getTweets().add(finalTweet);
-		userRepository.save(user);
-
-		return tweetMapper.entityToResponse(finalTweet);
+		return tweet;
 	}
 
 	private void validateUsername(String username) {

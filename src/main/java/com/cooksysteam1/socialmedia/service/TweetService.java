@@ -22,4 +22,6 @@ public interface TweetService {
     ContextDto getContextById(Long id);
 
 	TweetResponseDto createTweet(TweetRequestDto tweetRequestDto);
+
+    TweetResponseDto createReplyTweet(Long id, TweetRequestDto tweetRequestDto);
 }
