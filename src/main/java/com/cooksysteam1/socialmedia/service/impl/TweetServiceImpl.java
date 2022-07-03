@@ -133,16 +133,6 @@ public class TweetServiceImpl implements TweetService {
 		return tweetMapper.entityToResponse(tweetRepository.saveAndFlush(repostTweet));
 	}
 
-	/**
-	 * Retrieves the tags associated with the tweet with the given id.
-	 * If that tweet is deleted or otherwise doesn't exist,
-	 * an error should be sent in lieu of a response.
-	 *
-	 * IMPORTANT Remember that tags and mentions must be parsed by the server!
-	 *
-	 * Response
-	 * ['Hashtag']
-	 */
 	@Override
 	public List<HashtagResponseDto> getTweetHashtags(Long id) {
 		Tweet tweet = getTweetById(id);
