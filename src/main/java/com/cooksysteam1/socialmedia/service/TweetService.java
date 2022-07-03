@@ -4,6 +4,7 @@ import java.util.List;
 import com.cooksysteam1.socialmedia.entity.model.request.CredentialsDto;
 import com.cooksysteam1.socialmedia.entity.model.request.TweetRequestDto;
 import com.cooksysteam1.socialmedia.entity.model.response.ContextDto;
+import com.cooksysteam1.socialmedia.entity.model.response.HashtagResponseDto;
 import com.cooksysteam1.socialmedia.entity.model.response.TweetResponseDto;
 import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
 
@@ -26,4 +27,6 @@ public interface TweetService {
     TweetResponseDto createReplyTweet(Long id, TweetRequestDto tweetRequestDto);
 
 	TweetResponseDto createRepostTweet(Long id, TweetRequestDto tweetRequestDto);
+
+	List<HashtagResponseDto> getTweetHashtags(Long id);
 }

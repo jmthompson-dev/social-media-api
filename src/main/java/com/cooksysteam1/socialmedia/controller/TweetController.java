@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.cooksysteam1.socialmedia.entity.model.request.TweetRequestDto;
 import com.cooksysteam1.socialmedia.entity.model.response.ContextDto;
+import com.cooksysteam1.socialmedia.entity.model.response.HashtagResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import com.cooksysteam1.socialmedia.entity.model.request.CredentialsDto;
@@ -66,5 +67,11 @@ public class TweetController {
 	@ResponseStatus(HttpStatus.CREATED)
 	public TweetResponseDto createRepostTweet(@PathVariable Long id, @RequestBody TweetRequestDto tweetRequestDto) {
 		return tweetService.createRepostTweet(id, tweetRequestDto);
+	}
+
+	@GetMapping("/{id}/tags")
+	@ResponseStatus(HttpStatus.FOUND)
+	public List<HashtagResponseDto> getTweetHashtags(@PathVariable Long id) {
+		return tweetService.getTweetHashtags(id);
 	}
 }
