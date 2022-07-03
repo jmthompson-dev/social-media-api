@@ -9,10 +9,12 @@ import com.cooksysteam1.socialmedia.entity.User;
 import com.cooksysteam1.socialmedia.entity.model.request.CredentialsDto;
 import com.cooksysteam1.socialmedia.entity.model.request.TweetRequestDto;
 import com.cooksysteam1.socialmedia.entity.model.response.ContextDto;
+import com.cooksysteam1.socialmedia.entity.model.response.HashtagResponseDto;
 import com.cooksysteam1.socialmedia.entity.model.response.TweetResponseDto;
 import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
 import com.cooksysteam1.socialmedia.entity.resource.Context;
 import com.cooksysteam1.socialmedia.mapper.ContextMapper;
+import com.cooksysteam1.socialmedia.mapper.HashtagMapper;
 import com.cooksysteam1.socialmedia.mapper.TweetMapper;
 import com.cooksysteam1.socialmedia.mapper.UserMapper;
 import com.cooksysteam1.socialmedia.repository.HashtagRepository;
@@ -37,6 +39,8 @@ public class TweetServiceImpl implements TweetService {
 	private final UserMapper userMapper;
 
 	private final HashtagRepository hashtagRepository;
+
+	private final HashtagMapper hashtagMapper;
 
 	private final ContextMapper contextMapper;
 
@@ -127,6 +131,12 @@ public class TweetServiceImpl implements TweetService {
 		repostTweet.setRepostOf(repostOfTweet);
 		tweetRepository.save(repostOfTweet);
 		return tweetMapper.entityToResponse(tweetRepository.saveAndFlush(repostTweet));
+	}
+
+	@Override
+	public List<HashtagResponseDto> getTweetHashtags(Long id) {
+		Tweet tweet = getTweetById(id);
+		return hashtagMapper.entitiesToResponses(tweet.getHashtags());
 	}
 
 
