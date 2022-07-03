@@ -1,5 +1,3 @@
-
-
 package com.cooksysteam1.socialmedia.entity;
 
 import lombok.*;
