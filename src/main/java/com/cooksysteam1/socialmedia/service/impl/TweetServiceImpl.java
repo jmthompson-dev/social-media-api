@@ -3,9 +3,11 @@ package com.cooksysteam1.socialmedia.service.impl;
 import com.cooksysteam1.socialmedia.controller.exception.BadRequestException;
 import com.cooksysteam1.socialmedia.controller.exception.NotAuthorizedException;
 import com.cooksysteam1.socialmedia.controller.exception.NotFoundException;
+import com.cooksysteam1.socialmedia.entity.Hashtag;
 import com.cooksysteam1.socialmedia.entity.Tweet;
 import com.cooksysteam1.socialmedia.entity.User;
 import com.cooksysteam1.socialmedia.entity.model.request.CredentialsDto;
+import com.cooksysteam1.socialmedia.entity.model.request.TweetRequestDto;
 import com.cooksysteam1.socialmedia.entity.model.response.ContextDto;
 import com.cooksysteam1.socialmedia.entity.model.response.TweetResponseDto;
 import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
@@ -13,12 +15,12 @@ import com.cooksysteam1.socialmedia.entity.resource.Context;
 import com.cooksysteam1.socialmedia.mapper.ContextMapper;
 import com.cooksysteam1.socialmedia.mapper.TweetMapper;
 import com.cooksysteam1.socialmedia.mapper.UserMapper;
+import com.cooksysteam1.socialmedia.repository.HashtagRepository;
 import com.cooksysteam1.socialmedia.repository.TweetRepository;
 import com.cooksysteam1.socialmedia.repository.UserRepository;
 import com.cooksysteam1.socialmedia.service.TweetService;
 import lombok.RequiredArgsConstructor;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -28,13 +30,15 @@ public class TweetServiceImpl implements TweetService {
 
 	private final TweetMapper tweetMapper;
   
-	private final ContextMapper contextMapper;
-  
 	private final TweetRepository tweetRepository;
   
 	private final UserRepository userRepository;
   
 	private final UserMapper userMapper;
+
+	private final HashtagRepository hashtagRepository;
+
+	private final ContextMapper contextMapper;
 
 	@Override
 	public List<TweetResponseDto> getAllTweets() {
@@ -87,6 +91,102 @@ public class TweetServiceImpl implements TweetService {
 		context.setTarget(targetTweet);
 		setContextBeforeOrAfter(targetTweet, context);
 		return contextMapper.entityToResponse(context);
+	}
+
+	/**
+	 * Creates a new simple tweet, with the author set to the user identified by the credentials in the request body.
+	 * If the given credentials do not match an active user in the database, an error should be sent in lieu of a response.
+	 *
+	 * The response should contain the newly-created tweet.
+	 *
+	 * Because this always creates a simple tweet, it must have a content property and may not have inReplyTo or repostOf properties.
+	 *
+	 * IMPORTANT: when a tweet with content is created, the server must process the tweet's content for @{username} mentions and #{hashtag} tags.
+	 * There is no way to create hashtags or create mentions from the API, so this must be handled automatically!
+	 *
+	 */
+	@Override
+	public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
+		validateCredentialsRequestDto(tweetRequestDto.getCredentials());
+		User user = getUserByUsernameAndPassword(tweetRequestDto.getCredentials().getUsername(), tweetRequestDto.getCredentials().getPassword());
+		String content = tweetRequestDto.getContent();
+		stringValidator(content);
+		List<User> mentions = parseLabelForMentions(content);
+		List<Hashtag> hashtags = parseLabelForHashtags(content);
+
+		Tweet tweet = new Tweet();
+		tweet.setContent(content);
+		tweet.setAuthor(user);
+		tweet.setHashtags(hashtags);
+		tweet.setUserMentions(mentions);
+		tweet = tweetRepository.saveAndFlush(tweet);
+
+		Tweet finalTweet = tweet;
+		if (!hashtags.isEmpty()) {
+			hashtags.forEach(hashtag -> hashtag.getTweets().add(finalTweet));
+			hashtagRepository.saveAllAndFlush(hashtags);
+		}
+
+		user.getTweets().add(finalTweet);
+		userRepository.save(user);
+
+		return tweetMapper.entityToResponse(finalTweet);
+	}
+
+	private void validateUsername(String username) {
+		if (username == null || username.isBlank())
+			throw new NotAuthorizedException
+					("Invalid username. Expected username to not be null or empty but was false.");
+	}
+
+	public User getUserByUsername(String username) {
+		validateUsername(username);
+		Optional<User> optionalUser = userRepository.findUserByCredentials_UsernameAndDeletedFalse(username);
+		return validateOptionalAndReturnsUser(optionalUser);
+	}
+
+	private List<User> parseLabelForMentions(String content) {
+		List<User> users = new ArrayList<>();
+		int index = 0;
+		content += " ";
+		while (content.indexOf("@", index) >= 0) {
+			int start = content.indexOf("@", index)+1;
+			index = start;
+			int end = content.indexOf(" ", index);
+			users.add(getUserByUsername(content.substring(start, end)));
+
+		}
+		return users;
+	}
+
+	private List<Hashtag> parseLabelForHashtags(String content){
+		List<Hashtag> hashtags = new ArrayList<>();
+		int index = 0;
+		content += " ";
+		while (content.indexOf("#", index) >= 0) {
+			int start = content.indexOf("#", index);
+			index = start;
+			int end = content.indexOf(" ", index++);
+			hashtags.add(getValidHashtagByLabel(content.substring(start, end)));
+		}
+		return hashtags;
+	}
+
+	public Hashtag getValidHashtagByLabel(String label) {
+		stringValidator(label);
+		Optional<Hashtag> hashtagOptional = hashtagRepository.findHashtagByLabelIgnoreCase(label);
+		return validateOptionalAndReturnsHashtag(hashtagOptional);
+	}
+
+	private Hashtag validateOptionalAndReturnsHashtag(Optional<Hashtag> hashtagOptional) {
+		return hashtagOptional.orElseThrow
+				(() -> new NotFoundException("Invalid username. Expected to find a user by username but was false."));
+	}
+
+	private void stringValidator(String label) {
+		if (label == null || label.isBlank())
+			throw new NotAuthorizedException
+					("Invalid entry. Expected entry to not be null or empty but was false.");
 	}
 
 	private void setContextBeforeOrAfter(Tweet targetTweet, Context context) {

@@ -11,7 +11,6 @@ import java.util.List;
 @Table(name = "hashtag")
 @Getter
 @Setter
-@EqualsAndHashCode
 @NoArgsConstructor
 public class Hashtag {
 
