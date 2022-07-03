@@ -1,5 +1,6 @@
 package com.cooksysteam1.socialmedia.repository;
 
+import com.cooksysteam1.socialmedia.entity.Hashtag;
 import com.cooksysteam1.socialmedia.entity.User;
 import com.cooksysteam1.socialmedia.entity.resource.Credentials;
 import org.springframework.data.domain.Example;
