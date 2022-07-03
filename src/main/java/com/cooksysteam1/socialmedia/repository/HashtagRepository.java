@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
 	
-	Optional<Hashtag> findByLabel(String label);
+	boolean existsByLabel(String label);
 }
