@@ -86,4 +86,10 @@ public class TweetController {
 	public List<TweetResponseDto> getTweetReposts(@PathVariable Long id) {
 		return tweetService.getTweetReposts(id);
 	}
+
+	@GetMapping("{id}/mentions")
+	@ResponseStatus(HttpStatus.FOUND)
+	public List<UserResponseDto> getTweetMentions(@PathVariable Long id) {
+		return tweetService.getTweetMentions(id);
+	}
 }

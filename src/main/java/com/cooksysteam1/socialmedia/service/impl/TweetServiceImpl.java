@@ -151,6 +151,12 @@ public class TweetServiceImpl implements TweetService {
 		return tweetMapper.entitiesToResponses(tweet.getReposts());
 	}
 
+	@Override
+	public List<UserResponseDto> getTweetMentions(Long id) {
+		Tweet tweet = getTweetById(id);
+		return userMapper.entitiesToResponses(tweet.getUserMentions());
+	}
+
 	private Tweet createNewValidatedTweet(String content, TweetRequestDto tweetRequestDto) {
 		User user = getUserByUsernameAndPassword(tweetRequestDto.getCredentials().getUsername(), tweetRequestDto.getCredentials().getPassword());
 		Tweet tweet = new Tweet();
