@@ -13,6 +13,6 @@ public class ValidateServiceImpl implements ValidateService {
 
     @Override
     public boolean checkIfUsernameExist(String username) {
-        return userRepository.existsByCredentials_Username(username);
+        return userRepository.existsByCredentials_UsernameAndDeletedFalse(username);
     }
 }
