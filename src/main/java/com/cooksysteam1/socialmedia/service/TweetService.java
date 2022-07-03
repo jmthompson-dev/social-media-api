@@ -29,4 +29,6 @@ public interface TweetService {
 	TweetResponseDto createRepostTweet(Long id, TweetRequestDto tweetRequestDto);
 
 	List<HashtagResponseDto> getTweetHashtags(Long id);
+
+	List<TweetResponseDto> getTweetReplies(Long id);
 }
