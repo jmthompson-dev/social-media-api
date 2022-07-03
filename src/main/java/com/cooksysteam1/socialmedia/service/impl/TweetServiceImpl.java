@@ -139,6 +139,21 @@ public class TweetServiceImpl implements TweetService {
 		return hashtagMapper.entitiesToResponses(tweet.getHashtags());
 	}
 
+	/**
+	 * Retrieves the direct replies to the tweet with the given id.
+	 * If that tweet is deleted or otherwise doesn't exist, an error should be sent in lieu of a response.
+	 *
+	 * Deleted replies to the tweet should be excluded from the response.
+	 *
+	 * Response
+	 * ['Tweet']
+	 */
+	@Override
+	public List<TweetResponseDto> getTweetReplies(Long id) {
+		Tweet tweet = getTweetById(id);
+		return tweetMapper.entitiesToResponses(tweet.getReplies());
+	}
+
 
 	private Tweet createNewValidatedTweet(String content, TweetRequestDto tweetRequestDto) {
 		User user = getUserByUsernameAndPassword(tweetRequestDto.getCredentials().getUsername(), tweetRequestDto.getCredentials().getPassword());

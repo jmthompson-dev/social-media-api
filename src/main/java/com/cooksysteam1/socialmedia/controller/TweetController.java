@@ -74,4 +74,10 @@ public class TweetController {
 	public List<HashtagResponseDto> getTweetHashtags(@PathVariable Long id) {
 		return tweetService.getTweetHashtags(id);
 	}
+
+	@GetMapping("/{id}/replies")
+	@ResponseStatus(HttpStatus.FOUND)
+	public List<TweetResponseDto> getTweetReplies(@PathVariable Long id) {
+		return tweetService.getTweetReplies(id);
+	}
 }
