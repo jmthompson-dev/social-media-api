@@ -2,19 +2,13 @@ package com.cooksysteam1.socialmedia.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.cooksysteam1.socialmedia.entity.model.response.ContextDto;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 import com.cooksysteam1.socialmedia.entity.model.request.CredentialsDto;
 import com.cooksysteam1.socialmedia.entity.model.response.TweetResponseDto;
 import com.cooksysteam1.socialmedia.entity.model.response.UserResponseDto;
 import com.cooksysteam1.socialmedia.service.TweetService;
-
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -47,5 +41,11 @@ public class TweetController {
 	@GetMapping("/{id}/likes")
 	public List<UserResponseDto> getLikesOfTweet (@PathVariable Long id) {
 		return tweetService.getLikesOfTweet(id);
+	}
+
+	@GetMapping("/{id}/context")
+	@ResponseStatus(HttpStatus.FOUND)
+	public ContextDto getContextById(@PathVariable Long id) {
+		return tweetService.getContextById(id);
 	}
 }
