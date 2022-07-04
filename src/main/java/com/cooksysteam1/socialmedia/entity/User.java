@@ -22,9 +22,11 @@ public class User {
     private Long id;
 
     @CreationTimestamp
+    @Column(updatable = false)
     private Timestamp joined;
 
     @Embedded
+    @Column(nullable = false)
     private Credentials credentials;
 
     @Embedded

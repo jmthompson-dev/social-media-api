@@ -58,7 +58,7 @@ public class UserController {
     }
 
     @GetMapping("/@{username}/feed")
-    @ResponseStatus(HttpStatus.FOUND)
+    @ResponseStatus(HttpStatus.OK)
     public List<TweetResponseDto> getTweetFeed(@PathVariable String username) {
         return userService.getTweetFeed(username);
     }
@@ -80,7 +80,7 @@ public class UserController {
     }
 
     @GetMapping("/@{username}/tweets")
-    @ResponseStatus(HttpStatus.FOUND)
+    @ResponseStatus(HttpStatus.OK)
     public List<TweetResponseDto> getUserTweets(@PathVariable String username) {
         return userService.getUserTweets(username);
     }

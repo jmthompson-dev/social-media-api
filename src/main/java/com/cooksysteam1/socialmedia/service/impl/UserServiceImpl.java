@@ -3,6 +3,9 @@ package com.cooksysteam1.socialmedia.service.impl;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.cooksysteam1.socialmedia.entity.resource.Profile;
+import com.cooksysteam1.socialmedia.mapper.ProfileMapper;
 import org.springframework.stereotype.Service;
 import com.cooksysteam1.socialmedia.controller.exception.BadRequestException;
 import com.cooksysteam1.socialmedia.controller.exception.NotAuthorizedException;
@@ -38,11 +41,11 @@ public class UserServiceImpl implements UserService {
 
 	private final CredentialsMapper credentialsMapper;
 
+	private final ProfileMapper profileMapper;
+
 	@Override
 	public List<UserResponseDto> getAllUsers() {
 		List<User> users = userRepository.findAllUsersByDeletedFalse();
-		if (users.isEmpty())
-			throw new NotFoundException("Unknown error. Expected to find all users but was false.");
 		return userMapper.entitiesToResponses(users);
 	}
 
@@ -50,10 +53,8 @@ public class UserServiceImpl implements UserService {
 	public UserResponseDto updateAUser(String username, UserRequestDto userRequestDto) {
 		validateUserRequestDto(userRequestDto);
 		validateUsername(username);
-		Optional<User> userOptional = userRepository
-			.findUserByCredentials(credentialsMapper.requestToEntity(userRequestDto.getCredentials()));
-		User user = validateOptionalAndReturnsUser(userOptional);
-		user.getCredentials().setUsername(username);
+		User user = getUserByUsername(userRequestDto.getCredentials().getUsername());
+		user.setProfile(updateProfile(userRequestDto, user));
 		return userMapper.entityToResponse(userRepository.saveAndFlush(user));
 	}
 
@@ -71,12 +72,16 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserResponseDto createAUser(UserRequestDto userRequestDto) {
 		validateUserRequestDto(userRequestDto);
-		Optional<User> userOptional = userRepository.findUserByCredentials
-			(credentialsMapper.requestToEntity(userRequestDto.getCredentials()));
-		User user = validateOptionalAndReturnsUser(userOptional);
-		if (user.getId() != null) {
+		validateProfileRequestDto(userRequestDto.getProfile());
+		Optional<User> userOptional = userRepository.findUserByCredentials_UsernameAndDeletedFalse(userRequestDto.getCredentials().getUsername());
+		User user = new User();
+		if (userOptional.isPresent()) {
+			user = userOptional.get();
 			validateUserAccountReactivation(user.getCredentials());
 			user.setDeleted(false);
+		} else {
+			user.setProfile(profileMapper.requestToEntity(userRequestDto.getProfile()));
+			user.setCredentials(credentialsMapper.requestToEntity(userRequestDto.getCredentials()));
 		}
 		return userMapper.entityToResponse(userRepository.saveAndFlush(user));
 	}
@@ -87,13 +92,16 @@ public class UserServiceImpl implements UserService {
 		return userMapper.entityToResponse(user);
 	}
 
-	
 	@Override
 	public List<TweetResponseDto> getTweetFeed(String username) {
-		List<Tweet> tweets = tweetRepository.findTweetsByAuthor_DeletedFalseAndAuthor_Credentials_Username(username);
-		if (tweets.isEmpty()) throw new NotFoundException("Invalid username. Expected tweets to be present but was false.");
-		tweets.stream().filter(Objects::isNull).forEach(tweet -> tweets.addAll(List.of(tweet.getInReplyTo(), tweet.getRepostOf())));
-		tweets.sort(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
+		User user = getUserByUsername(username);
+		List<Tweet> tweets = user.getTweets();
+
+		if (!tweets.isEmpty()){
+			user.getFollowing().stream().map(User::getTweets).forEach(tweets::addAll);
+			tweets.stream().filter(Objects::isNull).forEach(tweet -> tweets.addAll(List.of(tweet.getInReplyTo(), tweet.getRepostOf())));
+			tweets.sort(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
+		}
 		return tweetMapper.entitiesToResponses(tweets);
  }
  
@@ -151,6 +159,7 @@ public class UserServiceImpl implements UserService {
 		return tweetMapper.entitiesToResponses(tweets);
 	}
 
+
 	private User getUserByUsername(String username) {
 		validateUsername(username);
 		Optional<User> optionalUser = userRepository.findUserByCredentials_UsernameAndDeletedFalse(username);
@@ -173,14 +182,15 @@ public class UserServiceImpl implements UserService {
 	}
 
 	private void validateUserRequestDto(UserRequestDto userRequestDto) {
-		if (userRequestDto == null)
-			throw new BadRequestException("Invalid user. Expected user not to be null but was false.");
+		if (userRequestDto == null || userRequestDto.getProfile() == null)
+			throw new BadRequestException("Invalid dto. Expected dto not to be null but was false.");
 		validateCredentialsRequestDto(userRequestDto.getCredentials());
-		validateProfileRequestDto(userRequestDto.getProfile());
+
+//		validateProfileRequestDto(userRequestDto.getProfile());
 	}
 
 	private void validateProfileRequestDto(ProfileDto profileDto) {
-		if (profileDto == null || profileDto.getEmail() == null || profileDto.getEmail().isBlank())
+		if (profileDto == null || profileDto.getEmail() == null)
 			throw new BadRequestException("Invalid profile. Expected email field not to be null but was false.");
 	}
 
@@ -188,6 +198,15 @@ public class UserServiceImpl implements UserService {
 		if (username == null || username.isBlank())
 			throw new NotAuthorizedException
 				("Invalid username. Expected username to not be null or empty but was false.");
+	}
+
+	private Profile updateProfile(UserRequestDto userRequestDto, User user) {
+		Profile profileToSave = user.getProfile();
+		if (userRequestDto.getProfile().getFirstName() != null) profileToSave.setFirstName((userRequestDto.getProfile().getFirstName()));
+		if (userRequestDto.getProfile().getLastName() != null) profileToSave.setLastName((userRequestDto.getProfile().getLastName()));
+		if (userRequestDto.getProfile().getEmail() != null) profileToSave.setEmail((userRequestDto.getProfile().getEmail()));
+		if (userRequestDto.getProfile().getPhone() != null) profileToSave.setPhone((userRequestDto.getProfile().getPhone()));
+		return profileToSave;
 	}
 
 	private void validateCredentialsRequestDto(CredentialsDto credentialsRequestDto) {
