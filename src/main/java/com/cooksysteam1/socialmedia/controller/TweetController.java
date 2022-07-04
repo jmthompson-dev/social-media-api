@@ -31,6 +31,7 @@ public class TweetController {
 	}
 	
 	@DeleteMapping("/{id}")
+	@ResponseStatus(HttpStatus.OK)
 	public TweetResponseDto deleteTweetById(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
 		return tweetService.deleteTweetById(id, credentialsDto);
 	}
@@ -46,7 +47,7 @@ public class TweetController {
 	}
 
 	@GetMapping("/{id}/context")
-	@ResponseStatus(HttpStatus.FOUND)
+	@ResponseStatus(HttpStatus.OK)
 	public ContextDto getContextById(@PathVariable Long id) {
 		return tweetService.getContextById(id);
 	}
@@ -65,8 +66,8 @@ public class TweetController {
 
 	@PostMapping("/{id}/repost")
 	@ResponseStatus(HttpStatus.CREATED)
-	public TweetResponseDto createRepostTweet(@PathVariable Long id, @RequestBody TweetRequestDto tweetRequestDto) {
-		return tweetService.createRepostTweet(id, tweetRequestDto);
+	public TweetResponseDto createRepostTweet(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
+		return tweetService.createRepostTweet(id, credentialsDto);
 	}
 
 	@GetMapping("/{id}/tags")

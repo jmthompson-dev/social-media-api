@@ -19,12 +19,13 @@ public class HashTagController {
 	private final HashtagService hashtagService;
 	
 	@GetMapping
+	@ResponseStatus(HttpStatus.OK)
 	public List<HashtagResponseDto> getAllHashtags() {
 		return hashtagService.getAllHashtags();
 	}
 
 	@GetMapping("/{label}")
-	@ResponseStatus(HttpStatus.FOUND)
+	@ResponseStatus(HttpStatus.OK)
 	public List<TweetResponseDto> getHashtagsByLabel(@PathVariable String label) {
 		return hashtagService.getHashtagsByLabel(label);
 	}

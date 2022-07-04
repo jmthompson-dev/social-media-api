@@ -61,7 +61,7 @@ public class TweetServiceImpl implements TweetService {
 		Tweet tweetToDelete = getTweetById(id);
 		User user = getUserByUsernameAndPassword(credentialsDto.getUsername(), credentialsDto.getPassword());
 
-		if (tweetToDelete.getAuthor() != user) {
+		if (tweetToDelete.getAuthor() != user || tweetToDelete.isDelete()) {
 			throw new NotAuthorizedException("Credentials given do not belong to author of tweet.");
 		}
 		tweetToDelete.setDelete(true);
@@ -71,16 +71,25 @@ public class TweetServiceImpl implements TweetService {
 
 	@Override
 	public void likeTweetById(Long id, CredentialsDto credentialsDto) {
-		Tweet tweetToLike = getTweetById(id);
 		validateCredentialsRequestDto(credentialsDto);
+		Tweet tweetToLike = getTweetById(id);
 		User user = getUserByUsernameAndPassword(credentialsDto.getUsername(), credentialsDto.getPassword());
-
-		user.getTweetLikes().add(tweetToLike);
-		tweetToLike.getUserLikes().add(user);
-		userRepository.saveAndFlush(user);
-		tweetRepository.saveAndFlush(tweetToLike);
+		if (!tweetToLike.getUserLikes().contains(user)) {
+			user.getTweetLikes().add(tweetToLike);
+			tweetToLike.getUserLikes().add(user);
+			userRepository.saveAndFlush(user);
+			tweetRepository.saveAndFlush(tweetToLike);
+		}
 	}
 
+	/**
+	 * Retrieves the active users who have liked the tweet with the given id.
+	 * If that tweet is deleted or otherwise doesn't exist, an error should be sent in lieu of a response.
+	 *
+	 * Deleted users should be excluded from the response.
+	 * @param id
+	 * @return
+	 */
 	@Override
 	public List<UserResponseDto> getLikesOfTweet(Long id) {
 		Tweet tweet = getTweetById(id);
@@ -91,6 +100,7 @@ public class TweetServiceImpl implements TweetService {
 	@Override
 	public ContextDto getContextById(Long id) {
 		Tweet targetTweet = getTweetById(id);
+		if (targetTweet.isDelete()) throw new NotFoundException("Invalid id. Expected to find non deleted tweet but was false.");
 		Context context = new Context();
 		context.setTarget(targetTweet);
 		setContextBeforeOrAfter(targetTweet, context);
@@ -142,22 +152,19 @@ public class TweetServiceImpl implements TweetService {
 	}
 
 	@Override
-	public TweetResponseDto createRepostTweet(Long id, TweetRequestDto tweetRequestDto) {
-		validateCredentialsRequestDto(tweetRequestDto.getCredentials());
+	public TweetResponseDto createRepostTweet(Long id, CredentialsDto credentialsDto) {
+		validateCredentialsRequestDto(credentialsDto);
+		User user = getUserByUsernameAndPassword(credentialsDto.getUsername(), credentialsDto.getPassword());
 		Tweet repostOfTweet = getTweetById(id);
-		Tweet repostTweet = createNewValidatedTweet(tweetRequestDto);
-		repostOfTweet.getReposts().add(repostOfTweet);
+		Tweet repostTweet = new Tweet();
+		repostTweet.setAuthor(user);
 		repostTweet.setRepostOf(repostOfTweet);
-		tweetRepository.save(repostOfTweet);
+		repostOfTweet.getReposts().add(repostTweet);
+		user.getTweets().add(repostTweet);
+		userRepository.save(user);
 		return tweetMapper.entityToResponse(tweetRepository.saveAndFlush(repostTweet));
 	}
 
-	/**
-	 * Retrieves the tags associated with the tweet with the given id.
-	 * If that tweet is deleted or otherwise doesn't exist, an error should be sent in lieu of a resonse.
-	 *
-	 * IMPORTANT: Remember that tags and mentions must be parsed by the server!
-	 */
 	@Override
 	public List<HashtagResponseDto> getTweetHashtags(Long id) {
 		Optional<Tweet> tweetOptional = tweetRepository.findById(id);
@@ -216,8 +223,8 @@ public class TweetServiceImpl implements TweetService {
 		int index = 0;
 		content += " ";
 		while (content.indexOf("#", index) >= 0) {
-			int start = content.indexOf("#", index)-1;
-			index = start+2;
+			int start = content.indexOf("#", index)+1;
+			index = start+1;
 			int end = content.indexOf(" ", index);
 			String label = content.substring(start, end);
 			Optional<Hashtag> hashtagOptional = hashtagRepository.findHashtagByLabelIgnoreCase(label);
@@ -232,17 +239,6 @@ public class TweetServiceImpl implements TweetService {
 		}
 		return hashtags;
 	}
-
-//	public Hashtag getValidHashtagByLabel(String label) {
-//		stringValidator(label);
-//
-//		return validateOptionalAndReturnsHashtag(hashtagOptional);
-//	}
-//
-////	private Hashtag validateOptionalAndReturnsHashtag(Optional<Hashtag> hashtagOptional) {
-////		return hashtagOptional.orElseThrow
-////				(() -> new NotFoundException("Invalid username. Expected to find a user by username but was false."));
-////	}
 
 	private void stringValidator(String label) {
 		if (label == null || label.isBlank())
@@ -268,18 +264,18 @@ public class TweetServiceImpl implements TweetService {
 
 		if (!contextBefore.isEmpty()) {
 			contextBefore.stream().filter(Tweet::isDelete).sorted(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
-			context.setBefore(contextBefore);
 		}
 
 		if (!contextAfter.isEmpty()){
 			contextAfter.stream().filter(Tweet::isDelete).sorted(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
-			context.setAfter(contextAfter);
 		}
+		context.setBefore(contextBefore);
+		context.setAfter(contextAfter);
 	}
 
 	private Tweet getTweetById(Long id) {
 		validateTweetId(id);
-		Optional<Tweet> tweetOptional = tweetRepository.findTweetByDeleteFalseAndId(id);
+		Optional<Tweet> tweetOptional = tweetRepository.findById(id);
 		return validateOptionalAndReturnsTweet(tweetOptional);
 	}
 

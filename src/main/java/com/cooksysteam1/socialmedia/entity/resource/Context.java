@@ -10,10 +10,10 @@ import java.util.List;
 @NoArgsConstructor
 public class Context {
 
-    private Tweet target;
+    private List<Tweet> after;
 
     private List<Tweet> before;
 
-    private List<Tweet> after;
+    private Tweet target;
 
 }
