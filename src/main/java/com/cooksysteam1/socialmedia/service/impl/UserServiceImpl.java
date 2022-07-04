@@ -35,8 +35,6 @@ public class UserServiceImpl implements UserService {
 
 	private final UserMapper userMapper;
 
-	private final TweetRepository tweetRepository;
-
 	private final TweetMapper tweetMapper;
 
 	private final CredentialsMapper credentialsMapper;
@@ -96,11 +94,27 @@ public class UserServiceImpl implements UserService {
 	public List<TweetResponseDto> getTweetFeed(String username) {
 		User user = getUserByUsername(username);
 		List<Tweet> tweets = user.getTweets();
+		tweets.addAll(user.getTweetMentions());
 
 		if (!tweets.isEmpty()){
-			user.getFollowing().stream().map(User::getTweets).forEach(tweets::addAll);
-			tweets.stream().filter(Objects::isNull).forEach(tweet -> tweets.addAll(List.of(tweet.getInReplyTo(), tweet.getRepostOf())));
-			tweets.sort(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
+			for (User following : user.getFollowing()) {
+				if (following.getTweets() != null) tweets.addAll(following.getTweets());
+			}
+			for (Tweet tweet : tweets) {
+				if (!tweet.getReposts().isEmpty()) {
+					for (Tweet repost : tweet.getReposts()) {
+						if (!tweets.contains(tweet)) tweets.add(tweet);
+					}
+				}
+
+				if (!tweet.getReplies().isEmpty()) {
+					for (Tweet repost : tweet.getReplies()) {
+						if (!tweets.contains(tweet)) tweets.add(tweet);
+					}
+				}
+			}
+
+			tweets.stream().filter(Tweet::isDelete).sorted(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
 		}
 		return tweetMapper.entitiesToResponses(tweets);
  }

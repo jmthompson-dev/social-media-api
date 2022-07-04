@@ -74,7 +74,7 @@ public class UserController {
     }
 
     @GetMapping("/@{username}/mentions")
-    @ResponseStatus(HttpStatus.FOUND)
+    @ResponseStatus(HttpStatus.OK)
     public List<TweetResponseDto> getUserMentions(@PathVariable String username) {
         return userService.getUserMentions(username);
     }

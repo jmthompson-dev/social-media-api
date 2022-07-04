@@ -70,25 +70,25 @@ public class TweetController {
 	}
 
 	@GetMapping("/{id}/tags")
-	@ResponseStatus(HttpStatus.FOUND)
+	@ResponseStatus(HttpStatus.OK)
 	public List<HashtagResponseDto> getTweetHashtags(@PathVariable Long id) {
 		return tweetService.getTweetHashtags(id);
 	}
 
 	@GetMapping("/{id}/replies")
-	@ResponseStatus(HttpStatus.FOUND)
+	@ResponseStatus(HttpStatus.OK)
 	public List<TweetResponseDto> getTweetReplies(@PathVariable Long id) {
 		return tweetService.getTweetReplies(id);
 	}
 
 	@GetMapping("/{id}/reposts")
-	@ResponseStatus(HttpStatus.FOUND)
+	@ResponseStatus(HttpStatus.OK)
 	public List<TweetResponseDto> getTweetReposts(@PathVariable Long id) {
 		return tweetService.getTweetReposts(id);
 	}
 
 	@GetMapping("{id}/mentions")
-	@ResponseStatus(HttpStatus.FOUND)
+	@ResponseStatus(HttpStatus.OK)
 	public List<UserResponseDto> getTweetMentions(@PathVariable Long id) {
 		return tweetService.getTweetMentions(id);
 	}

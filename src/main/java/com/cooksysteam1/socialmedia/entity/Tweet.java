@@ -20,6 +20,8 @@ public class Tweet {
     @ManyToOne
     private User author;
 
+//    private String username;
+
     @CreationTimestamp
     private Timestamp posted;
 

@@ -100,22 +100,41 @@ public class TweetServiceImpl implements TweetService {
 	@Override
 	public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
 		validateCredentialsRequestDto(tweetRequestDto.getCredentials());
-		String content = tweetRequestDto.getContent();
-		stringValidator(content);
-		Tweet tweet = createNewValidatedTweet(null, tweetRequestDto);
-		User user = tweet.getAuthor();
-		user.getTweets().add(tweet);
-		userRepository.save(user);
-		return tweetMapper.entityToResponse(tweet);
+		validateContent(tweetRequestDto);
+		Tweet tweet = createNewValidatedTweet(tweetRequestDto);
+		return tweetMapper.entityToResponse(tweetRepository.saveAndFlush(tweet));
+	}
+
+	private void validateContent(TweetRequestDto tweetRequestDto) {
+		if (tweetRequestDto.getContent() == null ||
+		    tweetRequestDto.getContent().isBlank()) {
+			throw new NotAuthorizedException("Invalid Request. Expected content to nut be null but was false.");
+		}
+	}
+
+	private Tweet createNewValidatedTweet(TweetRequestDto tweetRequestDto) {
+		validateCredentialsRequestDto(tweetRequestDto.getCredentials());
+		User user = getUserByUsername(tweetRequestDto.getCredentials().getUsername());
+		Tweet tweet = new Tweet();
+		tweet.setAuthor(user);
+
+		if (tweetRequestDto.getContent() != null) {
+			List<User> mentions = parseLabelForMentions(tweetRequestDto.getContent());
+			List<Hashtag> hashtags = parseLabelForHashtags(tweetRequestDto.getContent(), tweet);
+
+			tweet.setUserMentions(mentions);
+			if (hashtags != null && !hashtags.isEmpty()) {
+				tweet.setHashtags(hashtagRepository.saveAllAndFlush(hashtags));
+			}
+		}
+		tweet.setContent(tweetRequestDto.getContent());
+		return tweet;
 	}
 
 	@Override
 	public TweetResponseDto createReplyTweet(Long id, TweetRequestDto tweetRequestDto) {
-		validateCredentialsRequestDto(tweetRequestDto.getCredentials());
-		String content = tweetRequestDto.getContent();
-		stringValidator(content);
 		Tweet inReplyToTweet = getTweetById(id);
-		Tweet tweetReply = createNewValidatedTweet(content, tweetRequestDto);
+		Tweet tweetReply = createNewValidatedTweet(tweetRequestDto);
 		inReplyToTweet.getReplies().add(tweetReply);
 		tweetReply.setInReplyTo(inReplyToTweet);
 		tweetRepository.save(inReplyToTweet);
@@ -126,16 +145,23 @@ public class TweetServiceImpl implements TweetService {
 	public TweetResponseDto createRepostTweet(Long id, TweetRequestDto tweetRequestDto) {
 		validateCredentialsRequestDto(tweetRequestDto.getCredentials());
 		Tweet repostOfTweet = getTweetById(id);
-		Tweet repostTweet = createNewValidatedTweet(null, tweetRequestDto);
+		Tweet repostTweet = createNewValidatedTweet(tweetRequestDto);
 		repostOfTweet.getReposts().add(repostOfTweet);
 		repostTweet.setRepostOf(repostOfTweet);
 		tweetRepository.save(repostOfTweet);
 		return tweetMapper.entityToResponse(tweetRepository.saveAndFlush(repostTweet));
 	}
 
+	/**
+	 * Retrieves the tags associated with the tweet with the given id.
+	 * If that tweet is deleted or otherwise doesn't exist, an error should be sent in lieu of a resonse.
+	 *
+	 * IMPORTANT: Remember that tags and mentions must be parsed by the server!
+	 */
 	@Override
 	public List<HashtagResponseDto> getTweetHashtags(Long id) {
-		Tweet tweet = getTweetById(id);
+		Optional<Tweet> tweetOptional = tweetRepository.findById(id);
+		Tweet tweet = validateOptionalAndReturnsTweet(tweetOptional);
 		return hashtagMapper.entitiesToResponses(tweet.getHashtags());
 	}
 
@@ -157,24 +183,7 @@ public class TweetServiceImpl implements TweetService {
 		return userMapper.entitiesToResponses(tweet.getUserMentions());
 	}
 
-	private Tweet createNewValidatedTweet(String content, TweetRequestDto tweetRequestDto) {
-		User user = getUserByUsernameAndPassword(tweetRequestDto.getCredentials().getUsername(), tweetRequestDto.getCredentials().getPassword());
-		Tweet tweet = new Tweet();
-		if (content != null) {
-			List<User> mentions = parseLabelForMentions(content);
-			List<Hashtag> hashtags = parseLabelForHashtags(content);
-			tweet.setHashtags(hashtags);
-			tweet.setUserMentions(mentions);
-			if (!hashtags.isEmpty()) {
-				for (Hashtag hashtag : hashtags) hashtag.getTweets().add(tweet);
-				hashtagRepository.saveAllAndFlush(hashtags);
-			}
-		}
-		tweet.setContent(content);
-		tweet.setAuthor(user);
-		tweet = tweetRepository.saveAndFlush(tweet);
-		return tweet;
-	}
+
 
 	private void validateUsername(String username) {
 		if (username == null || username.isBlank())
@@ -202,29 +211,38 @@ public class TweetServiceImpl implements TweetService {
 		return users;
 	}
 
-	private List<Hashtag> parseLabelForHashtags(String content){
+	private List<Hashtag> parseLabelForHashtags(String content, Tweet tweet){
 		List<Hashtag> hashtags = new ArrayList<>();
 		int index = 0;
 		content += " ";
 		while (content.indexOf("#", index) >= 0) {
-			int start = content.indexOf("#", index);
-			index = start;
-			int end = content.indexOf(" ", index++);
-			hashtags.add(getValidHashtagByLabel(content.substring(start, end)));
+			int start = content.indexOf("#", index)-1;
+			index = start+2;
+			int end = content.indexOf(" ", index);
+			String label = content.substring(start, end);
+			Optional<Hashtag> hashtagOptional = hashtagRepository.findHashtagByLabelIgnoreCase(label);
+			Hashtag hashtag = hashtagOptional.orElse(new Hashtag());
+			if (hashtag.getTweets() == null) {
+				hashtag.setLabel(label);
+				hashtag.setTweets(List.of(tweet));
+			} else {
+				hashtag.getTweets().add(tweet);
+			}
+			hashtags.add(hashtag);
 		}
 		return hashtags;
 	}
 
-	public Hashtag getValidHashtagByLabel(String label) {
-		stringValidator(label);
-		Optional<Hashtag> hashtagOptional = hashtagRepository.findHashtagByLabelIgnoreCase(label);
-		return validateOptionalAndReturnsHashtag(hashtagOptional);
-	}
-
-	private Hashtag validateOptionalAndReturnsHashtag(Optional<Hashtag> hashtagOptional) {
-		return hashtagOptional.orElseThrow
-				(() -> new NotFoundException("Invalid username. Expected to find a user by username but was false."));
-	}
+//	public Hashtag getValidHashtagByLabel(String label) {
+//		stringValidator(label);
+//
+//		return validateOptionalAndReturnsHashtag(hashtagOptional);
+//	}
+//
+////	private Hashtag validateOptionalAndReturnsHashtag(Optional<Hashtag> hashtagOptional) {
+////		return hashtagOptional.orElseThrow
+////				(() -> new NotFoundException("Invalid username. Expected to find a user by username but was false."));
+////	}
 
 	private void stringValidator(String label) {
 		if (label == null || label.isBlank())
@@ -268,7 +286,7 @@ public class TweetServiceImpl implements TweetService {
 	private Tweet validateOptionalAndReturnsTweet(Optional<Tweet> tweetOptional) {
 		Tweet tweet = tweetOptional.orElseThrow(() -> new NotFoundException
 			("Invalid tweet id. Expected to find a tweet by id but was false."));
-		if (tweet.isDelete()) throw new BadRequestException("Tweet could not be found.");
+//		if (tweet.isDelete()) throw new BadRequestException("Tweet could not be found.");
 		return tweet;
 	}
 
