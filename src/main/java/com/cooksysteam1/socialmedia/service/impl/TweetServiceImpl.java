@@ -82,14 +82,6 @@ public class TweetServiceImpl implements TweetService {
 		}
 	}
 
-	/**
-	 * Retrieves the active users who have liked the tweet with the given id.
-	 * If that tweet is deleted or otherwise doesn't exist, an error should be sent in lieu of a response.
-	 *
-	 * Deleted users should be excluded from the response.
-	 * @param id
-	 * @return
-	 */
 	@Override
 	public List<UserResponseDto> getLikesOfTweet(Long id) {
 		Tweet tweet = getTweetById(id);
@@ -238,12 +230,6 @@ public class TweetServiceImpl implements TweetService {
 			hashtags.add(hashtag);
 		}
 		return hashtags;
-	}
-
-	private void stringValidator(String label) {
-		if (label == null || label.isBlank())
-			throw new NotAuthorizedException
-					("Invalid entry. Expected entry to not be null or empty but was false.");
 	}
 
 	private void setContextBeforeOrAfter(Tweet targetTweet, Context context) {
