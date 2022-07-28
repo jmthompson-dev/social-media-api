@@ -11,7 +11,6 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-
     boolean existsUserByCredentialsAndDeletedFalse(Credentials credentials);
 
     List<User> findAllUsersByDeletedFalse();
@@ -23,4 +22,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByCredentials_UsernameAndDeletedFalse(String username);
 
     boolean existsByCredentials_Username(String username);
+
 }

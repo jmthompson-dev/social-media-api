@@ -1,6 +1,8 @@
 package com.cooksysteam1.socialmedia.service.impl;
 
-import com.cooksysteam1.socialmedia.controller.exception.BadRequestException;
+import
+
+		com.cooksysteam1.socialmedia.controller.exception.BadRequestException;
 import com.cooksysteam1.socialmedia.controller.exception.NotAuthorizedException;
 import com.cooksysteam1.socialmedia.controller.exception.NotFoundException;
 import com.cooksysteam1.socialmedia.entity.Hashtag;
@@ -249,11 +251,13 @@ public class TweetServiceImpl implements TweetService {
 		}
 
 		if (!contextBefore.isEmpty()) {
-			contextBefore.stream().filter(Tweet::isDelete).sorted(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
+			contextBefore.stream().filter(Tweet::isDelete).sorted
+					(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
 		}
 
 		if (!contextAfter.isEmpty()){
-			contextAfter.stream().filter(Tweet::isDelete).sorted(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
+			contextAfter.stream().filter(Tweet::isDelete).sorted
+					(Collections.reverseOrder(Comparator.comparing(Tweet::getPosted)));
 		}
 		context.setBefore(contextBefore);
 		context.setAfter(contextAfter);
